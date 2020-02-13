@@ -5,7 +5,7 @@ IMPORTANT INFORMATIONS :
 Please cite Cretignier et al., 2020 paper (see the paper in the directory for a better understanding of the code).
 ADS Link : https://ui.adsabs.harvard.edu/abs/2019arXiv191205192C/abstract
 
-RASSINE is a Python3 code (compatible with Python2) which is a simple tool to normalise spectra with the less "fine-tuning buttons" possible.
+RASSINE is a free access (https://github.com/MichaelCretignier/Rassine_public) Python3 code, compatible with Python2, which is a simple tool to normalise spectra with the less "fine-tuning buttons" possible.
 
 
 
@@ -20,7 +20,7 @@ You can change the parameters value in the Rassine_config.py file. Running this 
 The user do not need to compile it by himself/herself with Python since it will be automatically done by the main code Rassine.py
 
 RASSINE can be run in multi-processed using the Rassine_multiprocessed.py code.
-Finally, RASSINE contains a python code Rassine_trigger.py which is automatically launching all the different steps if you are working with a spectra time-series
+Finally, RASSINE contains a python code Rassine_trigger.py which is automatically launching all the different steps if you are working with a spectra time-series.
 
 ————————
 BASIC RULES :
@@ -58,14 +58,15 @@ You can also run the main Rassine.py code in sys mode, in this case the options 
 -P : to only print when RASSINE finished the normalisation
 
 Sys options are dominant in comparison to the values written in the Rassine_config.py file.
-You can provide the RASSINE output file to normalise another spectra from the same star using the 'anchor_file' parameter.
-The anchor file will acts as as a new config file for the parameters. Anchor file is dominant compared to sys mode.
+You can provide a RASSINE output file to normalise another spectra from the same star using the 'anchor_file' parameter.
+The anchor file will acts as as a new config file for the parameters. 
+Anchor file is dominant compared to sys mode.
 
 In summary :
 
 Anchor file > Sys mode > Config file
 
-RASSINE contains 7 parameters but only 4 are really relevant and don't need to be fine-tuned (Parameters3,  Parameter 5,  Parameter 6 & Parameter 7)
+RASSINE contains 6 parameters but only 3 are really relevant and don't need to be fine-tuned (Parameter 1,  Parameter 3,  Parameter 6)
 The code can be run in interactive mode (feedback = True in config file). If so, it will display the subproducts at each step, before the Sphinx ask your feedback in the terminal.
 By interacting with the Sphinx you can control the process until the wanted product is reached.
 
@@ -83,4 +84,5 @@ Remark :
     4) you can enter 'auto' for some parameters and RASSINE will try to find good value for the parameters (no guaranty to work)
     5) Rmax has to be smaller than 150 angstrom
 
-The output are given by the dictionary 'output' and the parameters saved in the dictionary 'parameters'.
+The output are given by the dictionary 'output','matching_anchors' or 'matching_diff' depending on your reduction progress.
+The parameters saved in the dictionary 'parameters'.
