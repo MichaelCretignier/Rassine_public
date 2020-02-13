@@ -165,6 +165,8 @@ lamp_offset = None
 nb_spectra_stacked = None
 arcfiles = None
 
+if not os.path.exists(anchor_file):
+    anchor_file=''
 
 if anchor_file!='':
     anchor_file = ras.open_pickle(anchor_file)
