@@ -78,8 +78,8 @@ REMARKS
 
 Remark :
     1) you don't need to change any parameters in the code except the ones in the Rassine_config.py or Rassine_trigger.py file
-    2) depending on the radius, the rolling pin can go THROUGH the spectrum if it is the case, either increase the radius parameter par_R or the stretch parameter (Parameter 1)
-    3) the K factors to increase the radius when interacting with the Sphinx has to be a 0.1 float between 1 and 10 (e.g : 3.3, 2.0 but not 1.84 or 2)
+    2) depending on the radius, the rolling pin can go THROUGH the spectrum if it is the case, either increase the radius parameter par_R or par_stretching parameter (Parameter 1)
+    3) the K factors to increase the radius when interacting with the Sphinx has to be between 1 and 10
     4) you can enter 'auto' for some parameters and RASSINE will try to find good value for the parameters (no guaranty to work)
     5) Rmax has to be smaller than 150 angstrom
 
