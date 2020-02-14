@@ -912,11 +912,15 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
             wave_min = np.min(grid)
             wave_max = np.max(grid)
 
-            berv = header['HIERARCH ESO DRS BERV']
-            lamp = header['HIERARCH ESO DRS CAL TH LAMP OFFSET']
+            kw = 'ESO'
+            if instrument=='HARPN':
+                kw='TNG'
+
+            berv = header['HIERARCH '+kw+' DRS BERV']
+            lamp = header['HIERARCH '+kw+' DRS CAL TH LAMP OFFSET']
             try:
-                pma = header['HIERARCH ESO TEL TARG PMA']*1000
-                pmd = header['HIERARCH ESO TEL TARG PMD']*1000
+                pma = header['HIERARCH '+kw+' TEL TARG PMA']*1000
+                pmd = header['HIERARCH '+kw+' TEL TARG PMD']*1000
             except:
                 pma=0
                 pmd=0
