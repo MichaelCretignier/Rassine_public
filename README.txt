@@ -10,7 +10,7 @@ RASSINE is a free access (https://github.com/MichaelCretignier/Rassine_public) P
 
 
 By default, the input file has to be either a pickle or csv dictionary with at minimum two columns containing the key words 'wave' and 'flux'.
-RASSINE can also read fits file,  however  it is better to first preprocess the file using the  « preprocess_fits » function to preprocess your fits file and convert them into the right format.
+RASSINE can also read fits file by preprocessing the file with the  « preprocess_fits » function.
 If you are a beginner user, let all the parameters to their default automatic value until you are sufficiently familiar with them (automatic mode often provide good enough result without any fine-tuning).
 
 The code work almost exclusively with pickle files. By default, the protocol version is automatically determined based on the python version (sys.version[0]).
