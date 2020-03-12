@@ -85,4 +85,4 @@ Remark :
     5) Rmax has to be smaller than 150 angstrom
 
 The output are given by the dictionary 'output','matching_anchors' or 'matching_diff' depending on your reduction progress.
-The parameters saved in the dictionary 'parameters'.
+The parameters are saved in the dictionary 'parameters'.
