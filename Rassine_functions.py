@@ -1296,6 +1296,7 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
                'RV_sys':RV_sys,'SNR_5500':SNR, 
                'hole_left':hole_left, 'hole_right':hole_right,
                'wave_min':wave_min,'wave_max':wave_max,'dwave':dwave,
+               'stacking_length':bin_length,
                'nb_spectra_stacked':nb_spectra_stacked,
                'arcfiles':name_root_files} 
         
