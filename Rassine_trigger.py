@@ -27,9 +27,8 @@ nthreads_preprocess = 8               # number of threads in parallel for the pr
 nthreads_matching = 2                 # number of threads in parallel for the matching (more than 2 is not efficient for some reasons...) 
 nthreads_rassine = 4                  # number of threads in parallel for the normalisation (BE CAREFUL RASSINE NEED A LOT OF RAM DEPENDING ON SPECTRUM LENGTH)
 
-rv_timeseries = -22.7      #/Users/cretignier/Documents/Yarara/HD128621/data/s1d/HARPS/DACE_TABLE/Dace_extracted_table.csv'      # RV time-series to remove in kms, (only if binaries with ~kms RV amplitudes) stored in a pickle dictionnary inside 'model' keyword 
-                       # otherwise give the systemic velocity
-plx_mas = 0            # parallaxe of the star in mas to compute the secular drift  
+rv_timeseries = -22.7      # RV time-series to remove in kms, (only if binaries with ~kms RV amplitudes) stored in a pickle dictionnary inside 'model' keyword 
+                           # otherwise give the systemic velocity
 
 dlambda = None                     # wavelength grid step of the equidistant grid, only if unevenly wavelength grid on lack of homogeneity in spectra time-series
 bin_length_stack = 1               # length of the binning for the stacking in days
@@ -60,7 +59,7 @@ else:
 
 if preprocessed:
     print('[STEP INFO] Preprocessing...')
-    os.system('python Rassine_multiprocessed.py -v PREPROCESS -s '+dir_spec_timeseries+' -n '+str(nthreads_preprocess)+' -i '+instrument+' -p '+str(plx_mas))
+    os.system('python Rassine_multiprocessed.py -v PREPROCESS -s '+dir_spec_timeseries+' -n '+str(nthreads_preprocess)+' -i '+instrument)
 
 if match_frame:
     print('[STEP INFO] Matching frame...')

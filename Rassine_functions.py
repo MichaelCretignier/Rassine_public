@@ -404,10 +404,10 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
     plt.subplots_adjust(left=0.10, bottom=0.25,top=0.95,hspace=0.30)
     plt.subplot(2,1,1)
     file_to_plot = open_pickle(names[snr.argsort()[-1]])
-    plt.plot(file_to_plot['wave'],file_to_plot['flux']/file_to_plot[sub_dico]['continuum_linear'])
+    plt.plot(file_to_plot['wave'],file_to_plot['flux']/file_to_plot[sub_dico]['continuum_linear'],color='k')
     ax = plt.gca()
-    plt.ylabel('Flux normalised',fontsize=13)
-    plt.title('Selection of the cluster')
+    plt.ylabel('Flux normalised',fontsize=14)
+    plt.title('Selection of the clusters',fontsize=14)
         
     plt.subplot(2,1,2,sharex=ax)
     for i,j in enumerate(names): 
@@ -415,15 +415,15 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
         plt.scatter(file_to_read[sub_dico]['anchor_wave'],i*np.ones(len(file_to_read[sub_dico]['anchor_wave'])),alpha=0.5) 
     plt.plot(file_to_plot['wave'],sum_mask_vert,color='g')
     plt.axhline(y=(len(names)*1.02),color='r')
-    plt.xlabel(r'Wavelength [$\AA$]',fontsize=13)
-    plt.ylabel('N° of the spectrum',fontsize=13)
+    plt.xlabel(r'Wavelength [$\AA$]',fontsize=14)
+    plt.ylabel('N° of the spectrum',fontsize=14)
     
     gri = file_to_plot['wave']
     l1, = plt.plot(gri, sum_mask_vert, color='k',lw=2)
     l2, = plt.plot([gri.min(),gri.max()],[len(names)*threshold]*2,color='b')
     plt.axes([0.37,0.57,0.05,0.05])
     plt.axis('off')
-    l3 = plt.text(0,0,'Nb of cluster detected : undetermined',fontsize=15)
+    l3 = plt.text(0,0,'Nb of cluster detected : undetermined',fontsize=14)
     axcolor = 'whitesmoke'
     
     axtresh = plt.axes([0.1, 0.12, 0.30, 0.03], facecolor = axcolor)
@@ -722,11 +722,12 @@ def matching_diff_continuum(names, sub_dico = 'matching_anchors', savgol_window 
     
     fig = plt.figure(figsize=(14,7))
     plt.subplots_adjust(left=0.10, bottom=0.25,top=0.95,hspace=0.30)
-    plt.title('Selection of the smoothing kernel length')
-    plt.plot(file['wave'], diff, color='b',alpha=0.4)
-    l1, = plt.plot(file['wave'], correction, color='k')
-    plt.xlabel(r'Wavelength [$\AA$]',fontsize=13)
-    plt.ylabel(r'$F - F_{ref}$ [normalised flux units]',fontsize=13)
+    plt.title('Selection of the smoothing kernel length',fontsize=14)
+    plt.plot(file['wave'], diff, color='b',alpha=0.4,label='flux difference')
+    l1, = plt.plot(file['wave'], correction, color='k',label='smoothed flux difference (flux correction)')
+    plt.xlabel(r'Wavelength [$\AA$]',fontsize=14)
+    plt.ylabel(r'$F - F_{ref}$ [normalised flux units]',fontsize=14)
+    plt.legend()
     axcolor = 'whitesmoke'
     axsmoothing = plt.axes([0.2, 0.1, 0.40, 0.03], facecolor = axcolor)
     ssmoothing = Slider(axsmoothing, 'Kernel length', 1, 500, valinit = savgol_window, valstep=1)
@@ -1305,8 +1306,11 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
         else:
             save_pickle(directory+'/Prepared_'+files_to_process[num].split('/')[-1],out)
     
+    all_snr = np.array(all_snr)
+
+    print('SNR 5500 statistic (Q1/Q2/Q3) : Q1 = %.0f / Q2 = %.0f / Q3 = %.0f'%(np.nanpercentile(all_snr,25),np.nanpercentile(all_snr,50),np.nanpercentile(all_snr,75)))
+
     if make_master:
-        all_snr = np.array(all_snr)
         all_berv = np.array(all_berv)
         stack = np.array(all_stack)
         stack = np.sum(stack,axis=0)
@@ -1552,10 +1556,10 @@ def try_field(dico,field):
         return None
 
 
-def troncated(array,spectre):
+def troncated(array, spectre, treshold=5):
     maxi = np.percentile(spectre,99.9)
     mini = np.percentile(spectre,0.1)
-    tresh = (maxi-mini)/20
+    tresh = (maxi-mini)/treshold
     array[array<mini-tresh] = mini
     array[array>maxi+tresh] = maxi
     return array
