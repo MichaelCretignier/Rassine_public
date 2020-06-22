@@ -76,7 +76,6 @@ outputs_interpolation_saved = 'all' # to only save a specific continuum (output 
 outputs_denoising_saved = 'undenoised'        # to only save a specific continuum (output files are lighter), either 'denoised','undenoised' or 'all'
 
 light_version = True    # to save only the vital output
-speedup = 1             # to improve the speed of the rolling processes (not yet fully tested)
 
 
 config = {'spectrum_name':spectrum_name,
@@ -108,4 +107,4 @@ config = {'spectrum_name':spectrum_name,
           'outputs_interpolation_save':outputs_interpolation_saved,
           'outputs_denoising_save':outputs_denoising_saved,
           'light_file':light_version,
-          'speedup':speedup} 
+          'speedup':1} 

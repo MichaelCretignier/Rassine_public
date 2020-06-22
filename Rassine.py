@@ -100,7 +100,7 @@ column_wave = 'wave'
 column_flux = 'flux'  
 
 if len(sys.argv)>1:
-    optlist,args =  getopt.getopt(sys.argv[1:],'f:s:o:r:R:a:w:l:p:P:e:')
+    optlist,args =  getopt.getopt(sys.argv[1:],'f:s:o:r:R:a:w:l:p:P:e:S:')
     for j in optlist:
         if j[0] == '-f': #flux column key
             column_flux = j[1]
@@ -130,7 +130,10 @@ if len(sys.argv)>1:
             only_print_end = j[1]
         if j[0] == '-e': #only print end
             plot_end = j[1]
-    
+        if j[0] == '-S': #only print end
+            save_last_plot = j[1]
+
+
     if (only_print_end == 'True')|(only_print_end == 'true')|(only_print_end == '1')|(only_print_end == True):
         only_print_end = True
     else:
@@ -145,6 +148,11 @@ if len(sys.argv)>1:
         feedback = True
     else:
         feedback = False
+
+    if (save_last_plot == 'True')|(save_last_plot == 'true')|(save_last_plot == '1')|(save_last_plot == True):
+        save_last_plot = True
+    else:
+        save_last_plot = False
 
 filename = spectrum_name.split('/')[-1]
 cut_extension = len(filename.split('.')[-1]) + 1
@@ -1570,7 +1578,7 @@ jump_point = 1 # make lighter figure for article
 if (feedback)|(plot_end)|(save_last_plot):
     fig = plt.figure(figsize=(16,6))
     plt.subplot(2,1,1)
-    plt.plot(grid[::jump_point], spectrei[::jump_point], label = 'spectrum',color='g')
+    plt.plot(grid[::jump_point], spectrei[::jump_point], label = 'spectrum (SNR=%.0f)'%(int(SNR_0)),color='g')
     plt.plot(grid[::jump_point], spectre[::jump_point]*normalisation, label = 'spectrum reduced',color='b',alpha=0.3)
     plt.scatter(wave, flux, color = 'k', label='anchor points (%s)'%(int(len(wave))),zorder=100)
 
@@ -1603,7 +1611,7 @@ if (feedback)|(plot_end)|(save_last_plot):
     plt.subplots_adjust(left=0.07,right=0.96,hspace=0,top=0.95)
     if save_last_plot:
         plt.savefig(output_dir+new_file+'_output.png')
-    if (feedback)|(plot_end):
+    if (feedback):
         plt.show(block=False)
         loop = ras.sphinx('Press Enter to finish the execution and save the final product')
         plt.close()

@@ -6,6 +6,7 @@ Created on Fri May 17 10:41:21 2019
 @author: cretignier
 """
 
+from __future__ import print_function
 import multiprocessing as multicpu
 import os
 import numpy as np 
@@ -18,6 +19,9 @@ from Rassine_functions import make_sound
 from Rassine_functions import preprocess_fits
 from Rassine_functions import preprocess_prematch_stellar_frame
 from Rassine_functions import preprocess_match_stellar_frame
+from Rassine_functions import intersect_all_continuum
+from Rassine_functions import matching_diff_continuum
+
 
 """COMMMENT OF DEVELOPPERS : WE ADMISE THE USER TO USE THE RASSINE_TRIGGER.PY RATHER THAN TO INTERACT DIRECTLY WITH THE MULTIPROCESSED FILE HERE"""
 
@@ -35,7 +39,7 @@ process = 'RASSINE' #either PREPROCESS, MATCHING OR RASSINE
 
 #sys arguments bypass the previous ones
 if len(sys.argv)>1:
-    optlist,args =  getopt.getopt(sys.argv[1:],'s:i:o:a:l:P:n:e:v:d:k:p:')
+    optlist,args =  getopt.getopt(sys.argv[1:],'s:i:o:a:l:P:n:e:v:d:k:p:w:')
     for j in optlist:
         if j[0] == '-s': #spectrum file
             files_to_reduce = j[1]
@@ -55,6 +59,8 @@ if len(sys.argv)>1:
             process = j[1]     
         if j[0] == '-p': #only print end
             plx_mas = np.float(j[1])
+        if j[0] == '-w': #only print end
+            savgol_window = int(np.float(j[1]))
         if j[0] == '-d': 
             dlambda = j[1]
             if dlambda == 'None':
@@ -104,6 +110,20 @@ def run_rassine(file_liste):
         for n in file_liste:
             os.system('python Rassine.py -s '+n+' -o '+output_dir+' -a '+str(feedback)+' -P '+str(only_print_end)+' -l '+anchor_file+' -e '+str(plot_end))            
 
+def run_matching_diff(file_liste):
+    starting.acquire() # no other process can get it until it is released
+    threading.Timer(0.7, starting.release).start() # release in 6 seconds
+    matching_diff_continuum(file_liste, sub_dico = 'matching_anchors', master=anchor_file, savgol_window = savgol_window, zero_point=False) 
+
+def run_matching_diff(file_liste):
+    starting.acquire() # no other process can get it until it is released
+    threading.Timer(0.7, starting.release).start() # release in 6 seconds
+    matching_diff_continuum(file_liste, sub_dico = 'matching_anchors', master=anchor_file, savgol_window = savgol_window, zero_point=False) 
+
+def run_intersect_continuum(file_liste):
+    starting.acquire() # no other process can get it until it is released
+    threading.Timer(0.7, starting.release).start() # release in 6 seconds
+    intersect_all_continuum(file_liste, add_new=True) 
 
 
 if process=='RASSINE':
@@ -116,6 +136,35 @@ if process=='RASSINE':
         chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
         pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
         pool.map(run_rassine, chunks)
+
+    make_sound('Racine Multiprocessing has finished')
+
+
+elif process=='INTERSECT':
+
+    print('Number of files to reduce %.0f'%(len(rassine_files_to_reduce)))
+
+    if nthreads >= multicpu.cpu_count():
+        print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
+    else:
+        chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
+        pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
+        pool.map(run_intersect_continuum, chunks)
+
+    make_sound('Racine Multiprocessing has finished')
+
+
+
+elif process=='SAVGOL':
+
+    print('Number of files to reduce %.0f'%(len(rassine_files_to_reduce)))
+
+    if nthreads >= multicpu.cpu_count():
+        print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
+    else:
+        chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
+        pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
+        pool.map(run_matching_diff, chunks)
 
     make_sound('Racine Multiprocessing has finished')
 
@@ -148,7 +197,6 @@ elif process=='MATCHING':
         split = np.array_split(np.arange(len(rassine_files_to_reduce)), nthreads)
         
         chunks = [(rassine_files_to_reduce[split[j]],(args[0],args[1],args[2],args[3],args[4],args[5],args[6][split[j]],args[7][split[j]],args[8][split[j]],args[9][split[j]],args[10][split[j]],args[11][split[j]],args[12])) for j in range(nthreads)]
-        
         
         pool = multicpu.Pool(processes=nthreads)
         pool.map(run_matching_wrapper, chunks)

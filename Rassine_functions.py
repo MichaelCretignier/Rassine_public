@@ -277,8 +277,8 @@ def import_files_mcpu(file_liste,kind):
     return sub, snr 
 
     
-def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='anchor_index', 
-                            nthreads=6, fraction=0.2, threshold = 0.66, tolerance=0.5, add_new = True): 
+def intersect_all_continuum_sphinx(names, master_spectrum=None, copies_master=0, kind='anchor_index', 
+                            nthreads=6, fraction=0.2, threshold = 0.66, tolerance=0.5, add_new = True, feedback=True): 
     """Search for the interction of all the anchors points in a list of filename
     For each anchor point the fraction of the closest distance to a neighbourhood is used. 
     Anchor point under the threshoold are removed (1 = most deleted, 0 = most kept).
@@ -288,6 +288,13 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
     print('Loading of the files, wait ... \n')
     names = np.sort(names)
     sub_dico = 'output'
+    
+    directory, dustbin = os.path.split(names[0])
+    directory = '/'.join(directory.split('/')[0:-1])+'/MASTER/'
+    
+    previous_files = glob.glob(directory+'Master_tool*.p')
+    for file_to_delete in previous_files:
+        os.system('rm '+file_to_delete)
     
     save = []
     snr = []
@@ -303,9 +310,7 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
             snr = snr + product[j][1]
     
     snr =  np.array(snr)
-        
-    number_of_files = len(names)
-    
+            
     if master_spectrum is not None:
         if copies_master==0:
             print('You have to specify the number of copy of the master file you want as argument.')
@@ -418,12 +423,45 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
     plt.xlabel(r'Wavelength [$\AA$]',fontsize=14)
     plt.ylabel('N° of the spectrum',fontsize=14)
     
+    stack_vert3 = np.zeros(len(sum_mask_vert))
+
+    stack_vert = np.zeros(len(sum_mask_vert))
+    for j in range(len(save)):
+        stack_vert[save[j]] += 1
+    
+    for j in range(len(center)):
+        if center[j] != np.nan:
+            stack_vert3[center[j]-windows[j]:center[j]+windows[j]+1] = height[j]
+    
+    stack_vert3[stack_vert3<(len(names)*threshold)] = 0
+    stack_vert3[stack_vert3>(len(names))] = len(names)
+    val, border = grouping(stack_vert3,1,1)
+    border = np.hstack([border,np.array([i[0] for i in val])[:,np.newaxis]])
+    
+    for j in range(len(border)):
+        if np.sum(stack_vert[int(border[j,0]):int(border[j,1])+1])<(border[j,3]*tolerance):
+            stack_vert3[int(border[j,0]):int(border[j,1])+1] = 0
+    
+    liste = []
+    for j in range(len(stack_vert3)-2):
+        j+=1
+        if (stack_vert3[j]!=stack_vert3[j-1])|(stack_vert3[j]!=stack_vert3[j+1]):
+            liste.append(j+1)
+    liste = np.array(liste)
+    if len(liste)!=0:
+        stack_vert3[liste] = 0
+    
+    val, border = grouping(stack_vert3,1,1)
+    border = np.hstack([border,np.array([i[0] for i in val])[:,np.newaxis]])
+    
+    nb_cluster = np.sum(border[:,-1]!=0)
+
     gri = file_to_plot['wave']
-    l1, = plt.plot(gri, sum_mask_vert, color='k',lw=2)
+    l1, = plt.plot(gri, stack_vert3, color='k',lw=2)
     l2, = plt.plot([gri.min(),gri.max()],[len(names)*threshold]*2,color='b')
     plt.axes([0.37,0.57,0.05,0.05])
     plt.axis('off')
-    l3 = plt.text(0,0,'Nb of cluster detected : undetermined',fontsize=14)
+    l3 = plt.text(0,0,'Nb of cluster detected : %.0f'%(nb_cluster),fontsize=14)
     axcolor = 'whitesmoke'
     
     axtresh = plt.axes([0.1, 0.12, 0.30, 0.03], facecolor = axcolor)
@@ -434,14 +472,19 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
     
     resetax = plt.axes([0.8, 0.05, 0.1, 0.1])
     button = Button(resetax, 'Reset', color=axcolor, hovercolor='0.975')
-    
+
     class Index():
-        nb_clust = 'undetermined'
+        nb_clust = nb_cluster
         def update(self,val):
             tresh = stresh.val
             tol = 1 - stolerance.val
             
             stack_vert3 = np.zeros(len(sum_mask_vert))
+
+            stack_vert = np.zeros(len(sum_mask_vert))
+            for j in range(len(save)):
+                stack_vert[save[j]] += 1
+
             for j in range(len(center)):
                 if center[j] != np.nan:
                     stack_vert3[center[j]-windows[j]:center[j]+windows[j]+1] = height[j]
@@ -450,10 +493,6 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
             stack_vert3[stack_vert3>(len(names))] = len(names)
             val, border = grouping(stack_vert3,1,1)
             border = np.hstack([border,np.array([i[0] for i in val])[:,np.newaxis]])
-            
-            stack_vert = np.zeros(len(sum_mask_vert))
-            for j in range(len(save)):
-                stack_vert[save[j]] += 1
             
             for j in range(len(border)):
                 if np.sum(stack_vert[int(border[j,0]):int(border[j,1])+1])<(border[j,3]*tol):
@@ -492,16 +531,21 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
     button.on_clicked(reset)
     
     plt.show(block=False)
-    make_sound('The sphinx is waiting on you...')
-    sphinx('Press ENTER to save the clusters locations (black curve)')
+    
+    if feedback:
+        make_sound('The sphinx is waiting on you...')
+        sphinx('Press ENTER to save the clusters locations (black curve)')
+        
     while type(callback.nb_clust)==str:
         print('[WARNING] You have to move the sliders at least once before validating clusters')
         make_sound('Warning')
         sphinx('Press ENTER to save the clusters locations (black curve)')
-    else:
-        plt.close()
     
-    treshold = stresh.val.copy()
+    time.sleep(0.5)
+    plt.close()
+    time.sleep(0.5)
+    
+    threshold = stresh.val.copy()
     tolerance = stolerance.val.copy()
     
     #after plot
@@ -509,172 +553,225 @@ def intersect_all_continuum(names, master_spectrum=None, copies_master=0, kind='
     val2, border2 = grouping(l1.get_ydata(),1,1)
     border2 = np.hstack([border2,np.array([i[0] for i in val2])[:,np.newaxis]])
     border2 = border2[border2[:,-1] > 0]
-    cluster_center = (border2[:,1]-border2[:,0])/2+border2[:,0]
-    test = sum_mask*(l1.get_ydata() > 0) 
-        
+    curve = (l1.get_ydata() > 0)
+    
     plt.close()   
 
-    print('Extraction of the new continua, wait... \n')
+    output_cluster = {'curve':curve,'border':border2, 'wave':gri,
+                      'threshold':'%.2f'%(threshold), 'tolerance':'%.2f'%(tolerance),'fraction':'%.2f'%(fraction),
+                      'nb_copies_master':copies_master, 'master_filename':master_spectrum}
     
-    for i,j in enumerate(names[0:number_of_files]):
-        file = open_pickle(j)
-        spectrei = file['flux']
-        spectre = file['flux_used']        
-        grid = file['wave']    
-        mask_idx = test[i][save[i]].astype('bool')
-        mask_idx[0:file['parameters']['number of cut']] = True
-        mask_idx[-file['parameters']['number of cut']:] = True
-        
-        index = file[sub_dico]['anchor_index']
-        wave = file[sub_dico]['anchor_wave']
-        flux = file[sub_dico]['anchor_flux']
-        try:
-            flux_denoised = file[sub_dico]['anchor_flux_denoised']
-        except:
-            flux_denoised = flux
-        
-        save_before = len(index)
-        
-        index = index[mask_idx]
-        wave = wave[mask_idx]
-        flux = flux[mask_idx]
-        flux_denoised = flux_denoised[mask_idx]
-        
-        save_after = len(index)
-        
-        index2 = (index>=border2[:,0][:,np.newaxis])&(index<=border2[:,1][:,np.newaxis])
-        cluster_empty = np.where(np.sum(index2,axis=1)==0)[0]
-        cluster_twin = np.where(np.sum(index2,axis=1)>1)[0]
+    save_pickle('',output_cluster)
+    
+    tool_name = 'Master_tool_%s.p'%(time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()))
 
-        if len(cluster_twin)!=0:
-            index3 = np.unique(index*index2[cluster_twin,:])[1:]  
-            #centers_with_twin = cluster_center[cluster_twin]
+    save_pickle(directory+'/'+tool_name, output_cluster)
+    
+def intersect_all_continuum(names, add_new = True): 
+    print('Extraction of the new continua, wait... \n')
+
+    names = np.sort(names)
+    sub_dico = 'output'
+    
+    directory, dustbin = os.path.split(names[0])
+    directory = '/'.join(directory.split('/')[0:-1])
+    
+    master_file = glob.glob(directory+'/MASTER/RASSINE_Master_spectrum*')[0]
+    names = np.hstack([master_file,names])
+    number_of_files = len(names)
+    
+    tool_file = glob.glob(directory+'/MASTER/Master_tool*')[0]
+    tool_name = tool_file.split('/')[-1]
+    tool = pd.read_pickle(tool_file)
+    
+    fraction = tool['fraction']
+    tolerance = tool['tolerance']
+    threshold = tool['threshold']
+    copies_master = tool['nb_copies_master']
+    master_spectrum = tool['master_filename']
+    border2 = tool['border']
+    cluster_center = (border2[:,1]-border2[:,0])/2+border2[:,0]
+    curve = tool['curve']
+    
+    for i,j in enumerate(names):
+        valid = True                
+        file = open_pickle(j)
+        try: 
+            valid = (file['matching_anchors']['parameters']['master_tool'] != tool_name)
+        except:
+            pass
+        
+        if valid:
+            spectrei = file['flux']
+            spectre = file['flux_used']        
+            grid = file['wave']  
+    
+            index = file[sub_dico]['anchor_index']
+            wave = file[sub_dico]['anchor_wave']
+            flux = file[sub_dico]['anchor_flux']
+    
+            save = index.copy()
             
-            index_kept = index3[match_nearest(cluster_center,index3)[:,1].astype('int')] #only twin closest to the cluster is kept
-            index_to_suppress = np.setdiff1d(index3,index_kept)
-            mask_idx = ~np.in1d(index,index_to_suppress)
+            diff = np.min([np.diff(save[1:]),np.diff(save[0:-1])],axis=0)
+            diff = np.array([diff[0]]+list(diff)+[diff[-1]])
+            diff = diff*np.float(fraction)
+            diff = diff.astype('int')
+            mask = np.zeros(len(grid))
+            new = []
+            for k in range(len(save)):
+                new.append(save[k] + np.arange(-diff[k],diff[k]))
+            new = np.unique(np.hstack(new))
+            new = new[(new>0)&(new<len(mask))]
+            mask[new.astype('int')] = 1
+            
+            test = mask*curve
+            
+            mask_idx = test[save].astype('bool')
+            mask_idx[0:file['parameters']['number of cut']] = True
+            mask_idx[-file['parameters']['number of cut']:] = True
+    
+            try:
+                flux_denoised = file[sub_dico]['anchor_flux_denoised']
+            except:
+                flux_denoised = flux
+            
+            save_before = len(index)
             
             index = index[mask_idx]
             wave = wave[mask_idx]
             flux = flux[mask_idx]
             flux_denoised = flux_denoised[mask_idx]
-        
-        save_after_twin = len(index)
-        
-        if add_new:
-            index_max, flux_max = local_max(spectre,file['parameters']['vicinity_local_max'])
             
-            new_max_index = []
-            new_max_flux = []
-            new_max_flux_denoised = []
-            new_max_wave = []
+            save_after = len(index)
             
-            for k in cluster_empty:
-                kept = (index_max>=border2[k,0])&(index_max<=border2[k,1])
-                if sum(kept)!=0:
-                    maxi = flux_max[kept].argmax()
-                    new_max_index.append((index_max[kept].astype('int'))[maxi])
-                    new_max_flux.append((flux_max[kept])[maxi])
-                    new_max_wave.append(grid[(index_max[kept].astype('int'))[maxi]])
-                    new_max_flux_denoised.append(np.mean(spectre[(index_max[kept].astype('int'))[maxi]-int(file['parameters']['denoising_dist']):(index_max[kept].astype('int'))[maxi]+int(file['parameters']['denoising_dist'])+1]))
-            
-            new_max_index = np.array(new_max_index)
-            new_max_flux = np.array(new_max_flux)
-            new_max_flux_denoised = np.array(new_max_flux_denoised)
-            new_max_wave = np.array(new_max_wave)         
-            
-            index = np.hstack([index,new_max_index])
-            wave = np.hstack([wave,new_max_wave])
-            flux = np.hstack([flux,new_max_flux])
-            flux_denoised = np.hstack([flux_denoised,new_max_flux_denoised])  
-                    
-        save_after_new = len(index)
-        print('\nModification of file (%.0f/%.0f): %s (SNR : %.0f) \n# of anchor before : %.0f \n# of anchor after out-of-cluster filtering : %0.f \n# of anchor after twin filtering : %.0f \n# of anchor after adding : %.0f'%(i,number_of_files,j,snr[i],save_before,save_after,save_after_twin,save_after_new))
-
-        continuum1, continuum3, continuum1_denoised, continuum3_denoised = make_continuum(wave, flux, flux_denoised, grid, spectrei, continuum_to_produce = [file['parameters']['continuum_interpolated_saved'],file['parameters']['continuum_denoised_saved']])
-        
-        float_precision = file['parameters']['float_precision']
-        if float_precision!='float64':
-            flux = flux.astype(float_precision)
-            wave = wave.astype(float_precision)
-            continuum3 = continuum3.astype(float_precision)
-            continuum1 = continuum1.astype(float_precision)
-            continuum3_denoised = continuum3_denoised.astype(float_precision)
-            continuum1_denoised = continuum1_denoised.astype(float_precision)
-            flux_denoised = flux_denoised.astype(float_precision)
-        index = index.astype('int')
-        
-        outputs_interpolation_saved = file['parameters']['continuum_interpolated_saved']
-        outputs_denoising_saved = file['parameters']['continuum_denoised_saved']
-        
-        if (outputs_interpolation_saved=='linear')&(outputs_denoising_saved=='undenoised'):    
-            output = {'continuum_linear':continuum1,
-                     'anchor_wave':wave,
-                     'anchor_flux':flux,
-                     'anchor_index':index}
-        elif (outputs_interpolation_saved=='cubic')&(outputs_denoising_saved=='undenoised'):    
-            output = {'continuum_cubic':continuum3,
-                     'anchor_wave':wave,
-                     'anchor_flux':flux,
-                     'anchor_index':index}
-        elif (outputs_interpolation_saved=='linear')&(outputs_denoising_saved=='denoised'):    
-            output = {'continuum_linear':continuum1_denoised,
-                     'anchor_wave':wave,
-                     'anchor_flux':flux_denoised,
-                     'anchor_index':index}
-        elif (outputs_interpolation_saved=='cubic')&(outputs_denoising_saved=='denoised'):     
-            output = {'continuum_cubic':continuum3_denoised,
-                     'anchor_wave':wave,
-                     'anchor_flux':flux_denoised,
-                     'anchor_index':index}
-        elif (outputs_interpolation_saved=='all')&(outputs_denoising_saved=='denoised'):     
-            output = {'continuum_cubic':continuum3_denoised,
-                  'continuum_linear':continuum1_denoised,
-                  'anchor_wave':wave,
-                  'anchor_flux':flux_denoised,
-                  'anchor_index':index}
-        elif (outputs_interpolation_saved=='all')&(outputs_denoising_saved=='undenoised'):     
-            output = {'continuum_cubic':continuum3,
-                  'continuum_linear':continuum1,
-                  'anchor_wave':wave,
-                  'anchor_flux':flux,
-                  'anchor_index':index}
-        elif (outputs_interpolation_saved=='linear')&(outputs_denoising_saved=='all'):     
-            output = {'continuum_linear':continuum1,
-                  'continuum_linear_denoised':continuum1_denoised,
-                  'anchor_wave':wave,
-                  'anchor_flux':flux,
-                  'anchor_flux_denoised':flux_denoised,          
-                  'anchor_index':index}  
-        elif (outputs_interpolation_saved=='cubic')&(outputs_denoising_saved=='all'):     
-            output = {'continuum_cubic':continuum3,
-                  'continuum_cubic_denoised':continuum3_denoised,
-                  'anchor_wave':wave,
-                  'anchor_flux':flux,
-                  'anchor_flux_denoised':flux_denoised,          
-                  'anchor_index':index}      
-        else:
-            output = {'continuum_cubic':continuum3,
-                  'continuum_linear':continuum1,
-                  'continuum_cubic_denoised':continuum3_denoised,
-                  'continuum_linear_denoised':continuum1_denoised,
-                  'anchor_wave':wave,
-                  'anchor_flux':flux,
-                  'anchor_flux_denoised':flux_denoised,
-                  'anchor_index':index}
-        
-        
-        file['matching_anchors'] = output
-        file['matching_anchors']['parameters'] = {'master_filename':master_spectrum,'sub_dico_used':sub_dico,'nb_copies_master':copies_master,
-                                                'fraction':'%.2f'%(fraction),'threshold':'%.2f'%(treshold),'tolerance':'%.2f'%(tolerance)}
-        save_pickle(names[i],file)
+            index2 = (index>=border2[:,0][:,np.newaxis])&(index<=border2[:,1][:,np.newaxis])
+            cluster_empty = np.where(np.sum(index2,axis=1)==0)[0]
+            cluster_twin = np.where(np.sum(index2,axis=1)>1)[0]
     
-
-def matching_diff_continuum(names, sub_dico = 'matching_anchors', savgol_window = 200, zero_point=False): 
-    """A savgol fitering can be performed on spectra diff 
-    (the spectrum with the highest snr is used as reference) to remove remaining fluctuation.
-    If zero point = False, the median level of the spectra difference is not removed and only the fluctuation are."""
+            if len(cluster_twin)!=0:
+                index3 = np.unique(index*index2[cluster_twin,:])[1:]  
+                #centers_with_twin = cluster_center[cluster_twin]
+                
+                index_kept = index3[match_nearest(cluster_center,index3)[:,1].astype('int')] #only twin closest to the cluster is kept
+                index_to_suppress = np.setdiff1d(index3,index_kept)
+                mask_idx = ~np.in1d(index,index_to_suppress)
+                
+                index = index[mask_idx]
+                wave = wave[mask_idx]
+                flux = flux[mask_idx]
+                flux_denoised = flux_denoised[mask_idx]
+            
+            save_after_twin = len(index)
+            
+            if add_new:
+                index_max, flux_max = local_max(spectre,file['parameters']['vicinity_local_max'])
+                
+                new_max_index = []
+                new_max_flux = []
+                new_max_flux_denoised = []
+                new_max_wave = []
+                
+                for k in cluster_empty:
+                    kept = (index_max>=border2[k,0])&(index_max<=border2[k,1])
+                    if sum(kept)!=0:
+                        maxi = flux_max[kept].argmax()
+                        new_max_index.append((index_max[kept].astype('int'))[maxi])
+                        new_max_flux.append((flux_max[kept])[maxi])
+                        new_max_wave.append(grid[(index_max[kept].astype('int'))[maxi]])
+                        new_max_flux_denoised.append(np.mean(spectre[(index_max[kept].astype('int'))[maxi]-int(file['parameters']['denoising_dist']):(index_max[kept].astype('int'))[maxi]+int(file['parameters']['denoising_dist'])+1]))
+                
+                new_max_index = np.array(new_max_index)
+                new_max_flux = np.array(new_max_flux)
+                new_max_flux_denoised = np.array(new_max_flux_denoised)
+                new_max_wave = np.array(new_max_wave)         
+                
+                index = np.hstack([index,new_max_index])
+                wave = np.hstack([wave,new_max_wave])
+                flux = np.hstack([flux,new_max_flux])
+                flux_denoised = np.hstack([flux_denoised,new_max_flux_denoised])  
+                        
+            save_after_new = len(index)
+            print('\nModification of file (%.0f/%.0f): %s \n# of anchor before : %.0f \n# of anchor after out-of-cluster filtering : %0.f \n# of anchor after twin filtering : %.0f \n# of anchor after adding : %.0f'%(i+1,number_of_files,j,save_before,save_after,save_after_twin,save_after_new))
     
+            continuum1, continuum3, continuum1_denoised, continuum3_denoised = make_continuum(wave, flux, flux_denoised, grid, spectrei, continuum_to_produce = [file['parameters']['continuum_interpolated_saved'],file['parameters']['continuum_denoised_saved']])
+            
+            float_precision = file['parameters']['float_precision']
+            if float_precision!='float64':
+                flux = flux.astype(float_precision)
+                wave = wave.astype(float_precision)
+                continuum3 = continuum3.astype(float_precision)
+                continuum1 = continuum1.astype(float_precision)
+                continuum3_denoised = continuum3_denoised.astype(float_precision)
+                continuum1_denoised = continuum1_denoised.astype(float_precision)
+                flux_denoised = flux_denoised.astype(float_precision)
+            index = index.astype('int')
+            
+            outputs_interpolation_saved = file['parameters']['continuum_interpolated_saved']
+            outputs_denoising_saved = file['parameters']['continuum_denoised_saved']
+            
+            if (outputs_interpolation_saved=='linear')&(outputs_denoising_saved=='undenoised'):    
+                output = {'continuum_linear':continuum1,
+                         'anchor_wave':wave,
+                         'anchor_flux':flux,
+                         'anchor_index':index}
+            elif (outputs_interpolation_saved=='cubic')&(outputs_denoising_saved=='undenoised'):    
+                output = {'continuum_cubic':continuum3,
+                         'anchor_wave':wave,
+                         'anchor_flux':flux,
+                         'anchor_index':index}
+            elif (outputs_interpolation_saved=='linear')&(outputs_denoising_saved=='denoised'):    
+                output = {'continuum_linear':continuum1_denoised,
+                         'anchor_wave':wave,
+                         'anchor_flux':flux_denoised,
+                         'anchor_index':index}
+            elif (outputs_interpolation_saved=='cubic')&(outputs_denoising_saved=='denoised'):     
+                output = {'continuum_cubic':continuum3_denoised,
+                         'anchor_wave':wave,
+                         'anchor_flux':flux_denoised,
+                         'anchor_index':index}
+            elif (outputs_interpolation_saved=='all')&(outputs_denoising_saved=='denoised'):     
+                output = {'continuum_cubic':continuum3_denoised,
+                      'continuum_linear':continuum1_denoised,
+                      'anchor_wave':wave,
+                      'anchor_flux':flux_denoised,
+                      'anchor_index':index}
+            elif (outputs_interpolation_saved=='all')&(outputs_denoising_saved=='undenoised'):     
+                output = {'continuum_cubic':continuum3,
+                      'continuum_linear':continuum1,
+                      'anchor_wave':wave,
+                      'anchor_flux':flux,
+                      'anchor_index':index}
+            elif (outputs_interpolation_saved=='linear')&(outputs_denoising_saved=='all'):     
+                output = {'continuum_linear':continuum1,
+                      'continuum_linear_denoised':continuum1_denoised,
+                      'anchor_wave':wave,
+                      'anchor_flux':flux,
+                      'anchor_flux_denoised':flux_denoised,          
+                      'anchor_index':index}  
+            elif (outputs_interpolation_saved=='cubic')&(outputs_denoising_saved=='all'):     
+                output = {'continuum_cubic':continuum3,
+                      'continuum_cubic_denoised':continuum3_denoised,
+                      'anchor_wave':wave,
+                      'anchor_flux':flux,
+                      'anchor_flux_denoised':flux_denoised,          
+                      'anchor_index':index}      
+            else:
+                output = {'continuum_cubic':continuum3,
+                      'continuum_linear':continuum1,
+                      'continuum_cubic_denoised':continuum3_denoised,
+                      'continuum_linear_denoised':continuum1_denoised,
+                      'anchor_wave':wave,
+                      'anchor_flux':flux,
+                      'anchor_flux_denoised':flux_denoised,
+                      'anchor_index':index}
+            
+            
+            file['matching_anchors'] = output
+            file['matching_anchors']['parameters'] = {'master_tool':tool_name,'master_filename':master_spectrum,'sub_dico_used':sub_dico,'nb_copies_master':copies_master,
+                                                      'threshold':threshold,'tolerance':tolerance,'fraction':fraction}
+            save_pickle(names[i],file)
+    
+def matching_diff_continuum_sphinx(names, sub_dico = 'matching_anchors', master=None, savgol_window = 200, zero_point=False):
     snr = []
     for j in names:
         file = open_pickle(j)
@@ -683,16 +780,18 @@ def matching_diff_continuum(names, sub_dico = 'matching_anchors', savgol_window 
     names = np.array(names)[np.array(snr).argsort()[::-1]]
     snr  = np.array(snr)[np.array(snr).argsort()[::-1]]
     
-    file_highest = open_pickle(names[0])
+    if master is None:
+        master = names[0]
+
+    file_highest = open_pickle(master)
     file_highest['matching_diff'] = file_highest[sub_dico]
     
-    save_pickle(names[0],file_highest)
+    save_pickle(master,file_highest)
 
     dx = np.diff(file_highest['wave'])[0]
     length_clip = int(100/dx) #smoothing on 100 \ang for the tellurics clean
     
     file = open_pickle(names[1])
-    
     
     keys = file_highest[sub_dico].keys()
     if 'continuum_cubic' in keys:
@@ -709,7 +808,6 @@ def matching_diff_continuum(names, sub_dico = 'matching_anchors', savgol_window 
         if i in keys:
             continuum_to_reduce.append(i)
             
-    
     diff = cont1-cont2
     med_value = np.nanmedian(diff)
     for k in range(3): #needed to avoid artefact induced by tellurics
@@ -757,34 +855,72 @@ def matching_diff_continuum(names, sub_dico = 'matching_anchors', savgol_window 
     plt.close()        
     time.sleep(1)
 
-    for i,j in enumerate(names[1:]):
-        print('Modification of file (%.0f/%.0f) : %s (SNR : %.0f)'%(i+1,len(names[1:]),j,snr[i+1]))
-        file = open_pickle(j)
-        spectre = file['flux_used']  
-        
-        par = {'reference_continuum':names[0],'savgol_window':savgol_window,'recenter':zero_point,'sub_dico_used':sub_dico}
-        file['matching_diff'] = {'parameters':par}
+    return master, savgol_window
 
-        for label in continuum_to_reduce:
-            cont = file[sub_dico][label]
-            cont2 = file_highest['flux_used']/file_highest[sub_dico][label]
+def matching_diff_continuum(names, sub_dico = 'matching_anchors', master=None, savgol_window = 200, zero_point=False): 
+    """A savgol fitering can be performed on spectra diff 
+    (the spectrum with the highest snr is used as reference) to remove remaining fluctuation.
+    If zero point = False, the median level of the spectra difference is not removed and only the fluctuation are."""
+    
+    snr = []
+    for j in names:
+        file = open_pickle(j)
+        snr.append(file['parameters']['SNR_5500'])
+    
+    names = np.array(names)[np.array(snr).argsort()[::-1]]
+    snr  = np.array(snr)[np.array(snr).argsort()[::-1]]
+    
+    if master is None:
+        master = names[0]
+
+    master_name = master.split('/')[-1]
+    file_highest = open_pickle(master)
+    dx = np.diff(file_highest['wave'])[0]
+    length_clip = int(100/dx) #smoothing on 100 \ang for the tellurics clean
+    
+    keys = file_highest[sub_dico].keys()
             
-            cont1 = spectre/cont
-            diff = cont1-cont2
-            med_value = np.nanmedian(diff)
-            for k in range(3): #needed to avoid artefact induced by tellurics
-                q1, q3, iq = rolling_iq(diff,window=length_clip)
-                diff[(diff>q3+1.5*iq)|(diff<q1-1.5*iq)] = med_value
-                diff[diff<q1-1.5*iq] = med_value
-            
-            correction = smooth(diff, savgol_window, shape='savgol') 
-            correction = smooth(correction, savgol_window, shape='savgol') 
-            if zero_point:
-                correction = correction - np.nanmedian(correction)   
-            cont_corr = cont.copy()/(1-correction.copy())                 
-            file['matching_diff'][label] = cont_corr
+    all_continuum = ['continuum_linear','continuum_cubic','continuum_linear_denoised','continuum_cubic_denoised']
+    continuum_to_reduce = []
+    for i in all_continuum:
+        if i in keys:
+            continuum_to_reduce.append(i)
+
+    for i,j in enumerate(names):
+        valid = True                        
+        file = open_pickle(j)
+        try: 
+            valid = (file['matching_diff']['parameters']['reference_continuum'] != master_name)
+        except:
+            pass
         
-        save_pickle(j,file)
+        if valid:
+            print('Modification of file (%.0f/%.0f) : %s (SNR : %.0f)'%(i+1,len(names),j,snr[i]))
+            spectre = file['flux_used']  
+            
+            par = {'reference_continuum':master_name,'savgol_window':savgol_window,'recenter':zero_point,'sub_dico_used':sub_dico}
+            file['matching_diff'] = {'parameters':par}
+    
+            for label in continuum_to_reduce:
+                cont = file[sub_dico][label]
+                cont2 = file_highest['flux_used']/file_highest[sub_dico][label]
+                
+                cont1 = spectre/cont
+                diff = cont1-cont2
+                med_value = np.nanmedian(diff)
+                for k in range(3): #needed to avoid artefact induced by tellurics
+                    q1, q3, iq = rolling_iq(diff,window=length_clip)
+                    diff[(diff>q3+1.5*iq)|(diff<q1-1.5*iq)] = med_value
+                    diff[diff<q1-1.5*iq] = med_value
+                
+                correction = smooth(diff, savgol_window, shape='savgol') 
+                correction = smooth(correction, savgol_window, shape='savgol') 
+                if zero_point:
+                    correction = correction - np.nanmedian(correction)   
+                cont_corr = cont.copy()/(1-correction.copy())                 
+                file['matching_diff'][label] = cont_corr
+            
+            save_pickle(j,file)
 
 
 def make_continuum(wave, flux, flux_denoised, grid, spectrei, continuum_to_produce = ['all','all']):
@@ -1077,10 +1213,10 @@ def preprocess_prematch_stellar_frame(files_to_process, rv=0, dlambda=None):
             hole_right_k = np.max(hole_right)+0.5 #increase of 0.5 the gap limit by security
             make_sound('Warning')
             print('\n [WARNING] GAP detected in s1d between : %.2f and %.2f ! '%(hole_left_k, hole_right_k))
-            rep = sphinx('Do you confirm these limit for the CCD gap ? (y/n)',rep=['y','n'])    
-            if rep=='n':
-                hole_left_k = -99.9
-                hole_right_k = -99.9               
+            #rep = sphinx('Do you confirm these limit for the CCD gap ? (y/n)',rep=['y','n'])    
+            #if rep=='n':
+            #    hole_left_k = -99.9
+            #    hole_right_k = -99.9               
         else:
             hole_left_k = -99.9
             hole_right_k = -99.9
@@ -1310,6 +1446,8 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
 
     print('SNR 5500 statistic (Q1/Q2/Q3) : Q1 = %.0f / Q2 = %.0f / Q3 = %.0f'%(np.nanpercentile(all_snr,25),np.nanpercentile(all_snr,50),np.nanpercentile(all_snr,75)))
 
+    master_name=None
+
     if make_master:
         all_berv = np.array(all_berv)
         stack = np.array(all_stack)
@@ -1320,9 +1458,12 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
         BERV = np.sum(all_berv*all_snr**2)/np.sum(all_snr**2)
         BERV_MIN = np.min(berv)
         BERV_MAX = np.max(berv)
-        plt.figure(figsize=(16,6))
-        plt.plot(grid,stack,color='k')
-        save_pickle(directory+'/Master_spectrum.p',{'flux':stack, 'master_spectrum':True,
+        #plt.figure(figsize=(16,6))
+        #plt.plot(grid,stack,color='k')
+
+        master_name = 'Master_spectrum_%s.p'%(time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()))
+
+        save_pickle(directory+'/'+master_name,{'flux':stack, 'master_spectrum':True,
                                                     'RV_sys':RV_sys, 'RV_shift':0, 'SNR_5500':SNR, 
                                                     'lamp_offset':0,'acc_sec':acc_sec,
                                                     'berv':BERV, 'berv_min':BERV_MIN,'berv_max':BERV_MAX,
@@ -1330,13 +1471,14 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
                                                     'hole_left':hole_left, 'hole_right':hole_right,
                                                     'wave_min':wave_min,'wave_max':wave_max,'dwave':dwave,
                                                     'nb_spectra_stacked':len(files_to_process),'arcfiles':'none'})
-        plt.xlabel(r'Wavelength [$\AA$]',fontsize=14)
-        plt.ylabel('Flux',fontsize=14)
-        plt.show()
+        #plt.xlabel(r'Wavelength [$\AA$]',fontsize=14)
+        #plt.ylabel('Flux',fontsize=14)
+        #plt.show()
         #loop = sphinx('Press Enter to finish the stacking process.')
         #plt.close()
 
     make_sound('Stacking spectra has finished')
+    return master_name
 
 def postprocess_tofits(path_input,path_rassine,anchor_mode,continuum_mode):
     

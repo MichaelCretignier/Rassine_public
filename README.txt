@@ -7,13 +7,14 @@ ADS Link : https://ui.adsabs.harvard.edu/abs/2019arXiv191205192C/abstract
 
 RASSINE is a free access (https://github.com/MichaelCretignier/Rassine_public) Python3 code, compatible with Python2, which is a simple tool to normalise spectra with the less "fine-tuning buttons" possible.
 
+A tutorial is available (Tuto_rassine.pdf).
 
 
 By default, the input file has to be either a pickle or csv dictionary with at minimum two columns containing the key words 'wave' and 'flux'.
 RASSINE can also read fits file by preprocessing the file with the  « preprocess_fits » function.
 If you are a beginner user, let all the parameters to their default automatic value until you are sufficiently familiar with them (automatic mode often provide good enough result without any fine-tuning).
 
-The code work almost exclusively with pickle files. By default, the protocol version is automatically determined based on the python version (sys.version[0]).
+By default, the protocol version of the pickle file is automatically determined based on the python version (sys.version[0]).
 If you want to change that change the : << protocol_pickle = ‘auto’ >> code line in the Rassine_functions.py file.
 
 You can change the parameters value in the Rassine_config.py file. Running this python file will produce a config pickle dictionary that will be read by RASSINE.
@@ -84,5 +85,5 @@ Remark :
     4) you can enter 'auto' for some parameters and RASSINE will try to find good value for the parameters (no guaranty to work)
     5) Rmax has to be smaller than 150 angstrom
 
-The output are given by the dictionary 'output','matching_anchors' or 'matching_diff' depending on your reduction progress.
+The output are given by the dictionary 'output', 'matching_anchors' or 'matching_diff' depending on your reduction progress.
 The parameters are saved in the dictionary 'parameters'.
