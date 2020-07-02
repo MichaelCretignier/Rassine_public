@@ -32,13 +32,12 @@ nthreads_matching = 2                 # number of threads in parallel for the ma
 nthreads_rassine = 4                  # number of threads in parallel for the normalisation (BE CAREFUL RASSINE NEED A LOT OF RAM DEPENDING ON SPECTRUM LENGTH)
 nthreads_intersect = 6                # number of threads in parallel for the post-continuum fit 
 
-rv_timeseries = -22.7      # RV time-series to remove in kms, (only if binaries with ~kms RV amplitudes) stored in a pickle dictionnary inside 'model' keyword 
+rv_timeseries = -22.7              # RV systemyc velocity or RV time-series to remove in kms (only if binaries with ~kms RV amplitudes) stored in a pickle dictionnary inside 'model' keyword 
 
-dlambda = None                     # wavelength grid step of the equidistant grid, only if unevenly wavelength grid on lack of homogeneity in spectra time-series
-bin_length_stack = 1               # length of the binning for the stacking in days
+dlambda = None                     # wavelength grid step of the equidistant grid, only if unevenly wavelength grid or lack of homogeneity in spectra time-series
+bin_length_stack = 0               # length of the binning for the stacking in days
 dbin = 0                           # dbin to shift the binning (0.5 for solar data)
-counter_stack = 0                  # define the first index of stack file names (index = counter + 1) 
-use_master_as_reference = False    # use master spectrum as reference for the clustering algorithm (case of low SNR spectra)
+use_master_as_reference = True    # use master spectrum as reference for the clustering algorithm (case of low SNR spectra)
 full_auto = False                  # to disable the sphinx on the master, intersect and matching stage
 
 # =============================================================================
@@ -56,6 +55,19 @@ rassine_diff_continuum = 1
 # =============================================================================
 # trigger
 # =============================================================================
+
+if len(sys.argv)>1:
+    optlist,args =  getopt.getopt(sys.argv[1:],'s:i:a:')
+    for j in optlist:
+        if j[0] == '-s': 
+            star = j[1]
+        if j[0] == '-i': 
+            instrument = j[1]
+        if j[0] == '-a': 
+            full_auto = bool(int(j[1]))
+        
+        dir_spec_timeseries = '/Users/cretignier/Documents/Yarara/'+star+'/data/s1d/'+instrument+'/'   
+        rv_timeseries = '/Users/cretignier/Documents/Yarara/'+star+'/data/s1d/'+instrument+'/DACE_TABLE/Dace_extracted_table.csv'
 
 
 if bin_length_stack != 0:
@@ -83,7 +95,6 @@ if stacking:
     master_name = ras.preprocess_stack(glob.glob(dir_spec_timeseries+'PREPROCESSED/*.p'), 
                          bin_length = bin_length_stack, 
                          dbin = dbin,
-                         counter = counter_stack,
                          make_master=True)
 
     previous_files = glob.glob(dir_spec_timeseries+'MASTER/*Master_spectrum*.p')

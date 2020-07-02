@@ -1364,7 +1364,7 @@ def preprocess_prestacking(files_to_process, bin_length = 1, dbin = 0):
     
     return jdb, berv, lamp, acc_sec, groups
     
-def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make_master=True):
+def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, make_master=True):
     
     """Stack the s1d spectras by bin_length in days. 
     Use dbin to shift the zero point (useful for solar observation).
@@ -1379,7 +1379,6 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
     
     group = np.unique(groups)
     
-    count = counter
     num=-1
 
     all_snr = []
@@ -1387,7 +1386,6 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
     all_berv = []
     for j in group:
         num+=1
-        count+=1
         g = np.where(groups==j)[0]
         file_arbitrary = pd.read_pickle(files_to_process[0])
         wave_min =  try_field(file_arbitrary,'wave_min')
@@ -1420,6 +1418,7 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
         all_stack.append(stack)
         nb_spectra_stacked = len(g)
         jdb_w = np.sum((jdb[g]-dbin)*bolo)/np.sum(bolo)
+        date_name = Time(jdb_w-0.5,format='mjd').isot
         berv_w = np.sum(berv[g]*bolo)/np.sum(bolo)
         lamp_w = np.sum(lamp[g]*bolo)/np.sum(bolo)
         all_berv.append(berv_w)
@@ -1438,7 +1437,7 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, counter=0, make
                'arcfiles':name_root_files} 
         
         if len(group)!=len(files_to_process):
-            save_pickle(directory+'/Stacked_spectrum_bin_'+str(bin_length)+'.'+str(count).zfill(len(str(len(group)-1)))+'.p',out)
+            save_pickle(directory+'/Stacked_spectrum_bin_'+str(bin_length)+'.'+date_name+'.p',out)
         else:
             save_pickle(directory+'/Prepared_'+files_to_process[num].split('/')[-1],out)
     
