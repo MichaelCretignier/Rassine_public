@@ -66,9 +66,6 @@ if len(sys.argv)>1:
         if j[0] == '-a': 
             full_auto = bool(int(j[1]))
         
-        dir_spec_timeseries = '/Users/cretignier/Documents/Yarara/'+star+'/data/s1d/'+instrument+'/'   
-        rv_timeseries = '/Users/cretignier/Documents/Yarara/'+star+'/data/s1d/'+instrument+'/DACE_TABLE/Dace_extracted_table.csv'
-
 
 if bin_length_stack != 0:
     fileroot_files_to_rassine = 'Stacked' #usual fileroot of the Stacked spectra produce by RASSINE
