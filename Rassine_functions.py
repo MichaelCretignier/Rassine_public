@@ -545,8 +545,8 @@ def intersect_all_continuum_sphinx(names, master_spectrum=None, copies_master=0,
     plt.close()
     time.sleep(0.5)
     
-    threshold = stresh.val.copy()
-    tolerance = stolerance.val.copy()
+    threshold = stresh.val
+    tolerance = stolerance.val
     
     #after plot
     
