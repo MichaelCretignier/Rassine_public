@@ -1175,9 +1175,12 @@ def preprocess_prematch_stellar_frame(files_to_process, rv=0, dlambda=None):
         plx_mas = [] ; acc_sec =[] 
         
         i = -1
+        nb_total = len(files_to_process)
         print('Loading the data, wait... \n')    
         for j in files_to_process:
             i+=1
+            if not (i%250):
+                print(' [INFO] Number of files processed : %s/%.0f (%.1f %%)'%(str(i).zfill(len(str(nb_total))),nb_total,100*i/nb_total))
             f = open_pickle(j)
               
             shift = rv[i]*(len(np.ravel(rv))!=1)
