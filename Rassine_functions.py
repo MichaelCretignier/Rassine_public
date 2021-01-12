@@ -1221,7 +1221,6 @@ def preprocess_prematch_stellar_frame(files_to_process, rv=0, dlambda=None):
             hole_left_k = -99.9
             hole_right_k = -99.9
             
-        value = np.unique(np.round(np.hstack(diff),8))
         berv = np.array(berv)
         lamp = np.array(lamp)
         plx_mas = np.array(plx_mas)
@@ -1234,6 +1233,8 @@ def preprocess_prematch_stellar_frame(files_to_process, rv=0, dlambda=None):
         print('\n [INFO] Spectra borders are found between : %.4f and %.4f'%(wave_min_k, wave_max_k))
        
         if dlambda is None:
+            value = np.unique(np.round(np.hstack(diff),8))
+            
             if len(value)==1:
                 dlambda = value[0]
                 print('\n [INFO] Spectra dwave is : %.4f \n'%(dlambda))
