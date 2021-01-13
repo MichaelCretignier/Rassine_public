@@ -96,8 +96,8 @@ plt.close('all')
 if speedup < 1:
     speedup = 1
 
-column_wave = 'wave'
-column_flux = 'flux'  
+#column_wave = 'wave'
+#column_flux = 'flux'  
 
 if len(sys.argv)>1:
     optlist,args =  getopt.getopt(sys.argv[1:],'f:s:o:r:R:a:w:l:p:P:e:S:')
