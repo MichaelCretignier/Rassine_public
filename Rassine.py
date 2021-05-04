@@ -576,12 +576,20 @@ calib_high = np.polyval([-0.38532535,20.17699949],par_fwhm/conversion_fwhm_sig)
 if not only_print_end:
     print(' Suggestion of a streching parameter to try : %.0f +/- %.0f'%(calib_low + (calib_high-calib_low)*0.5,(calib_high-calib_low)*0.25))
 
-if type(par_stretching) == str:
-    par_stretching = calib_low + (calib_high-calib_low) * np.float(par_stretching.split('_')[1])
-    #par_stretching = 20*computed_parameters #old calibration
-    if not only_print_end:
-        print(' [AUTO] par_stretching fixed : %.2f'%(par_stretching))
+out_of_calibration = False
+if par_fwhm/conversion_fwhm_sig>30:
+    out_of_calibration = True
+    print(' [WARNING] Star out of the FWHM calibration range')
 
+if type(par_stretching) == str:
+    if not out_of_calibration:
+        par_stretching = calib_low + (calib_high-calib_low) * np.float(par_stretching.split('_')[1])
+        #par_stretching = 20*computed_parameters #old calibration
+        if not only_print_end:
+            print(' [AUTO] par_stretching fixed : %.2f'%(par_stretching))
+    else:
+        print(' [AUTO] par_stretching out of the calibration range, value fixed at 7')
+        par_stretching = 7
 
 spectre = spectre/par_stretching
 flux = flux/par_stretching
@@ -630,10 +638,15 @@ if par_R=='auto':
     par_R = np.round(10*par_fwhm,1)
     if not only_print_end:
         print(' [AUTO] R fixed : %.1f'%(par_R))
-    if par_R > 10:
+    if par_R > 5:
         if not only_print_end:
-            print(' [WARNING] R larger than 10, R fixed at 10')
-        par_R = 10
+            print(' [WARNING] R larger than 5, R fixed at 5')
+        par_R = 5
+
+if out_of_calibration:
+    windows = 2. #2 typical line width scale (small window for the first continuum)
+    big_windows = 20.  #20typical line width scale (large window for the second continuum)
+
 
 law_chromatic = wave/minx
 
