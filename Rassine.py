@@ -577,7 +577,7 @@ if not only_print_end:
     print(' Suggestion of a streching parameter to try : %.0f +/- %.0f'%(calib_low + (calib_high-calib_low)*0.5,(calib_high-calib_low)*0.25))
 
 out_of_calibration = False
-if par_fwhm/conversion_fwhm_sig>30:
+if par_fwhm/conversion_fwhm_sig>30: 
     out_of_calibration = True
     print(' [WARNING] Star out of the FWHM calibration range')
 
