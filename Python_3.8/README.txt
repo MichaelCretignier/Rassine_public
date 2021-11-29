@@ -16,3 +16,5 @@ RuntimeError:
         is not going to be frozen to produce an executable.
 
 The present 5 documents should resolve that issue. 
+
+Deep aknowledgement to Romain Allart for managing to solve the issue. 
