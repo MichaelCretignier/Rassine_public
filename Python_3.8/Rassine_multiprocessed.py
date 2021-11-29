@@ -21,7 +21,10 @@ from Rassine_functions import preprocess_prematch_stellar_frame
 from Rassine_functions import preprocess_match_stellar_frame
 from Rassine_functions import intersect_all_continuum
 from Rassine_functions import matching_diff_continuum
+import platform
 
+py_ver = platform.python_version_tuple()
+py_ver = py_ver[0]+'.'+py_ver[1]
 
 """COMMMENT OF DEVELOPPERS : WE ADMISE THE USER TO USE THE RASSINE_TRIGGER.PY RATHER THAN TO INTERACT DIRECTLY WITH THE MULTIPROCESSED FILE HERE"""
 
@@ -99,6 +102,7 @@ def run_preprocessing(file_liste):
 def run_matching_wrapper(args):
     return preprocess_match_stellar_frame(args[0], args = args[1],final_sound=False) 
 
+
 def run_rassine(file_liste):
     starting.acquire() # no other process can get it until it is released
     threading.Timer(0.7, starting.release).start() # release in 6 seconds
@@ -132,9 +136,19 @@ if process=='RASSINE':
     if nthreads >= multicpu.cpu_count():
         print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
     else:
-        chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
-        pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
-        pool.map(run_rassine, chunks)
+        if float(py_ver)<3.7:
+            chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
+            pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
+            pool.map(run_rassine, chunks)
+        else:
+            def multi_rassine(Input,Nthreads=1):
+                chunks = [Input[j::Nthreads] for j in range(Nthreads)]
+                pool = multicpu.Pool(processes=Nthreads,initializer=init, initargs=[multicpu.Lock()])
+                pool.map(run_rassine, chunks)
+                return
+
+            if __name__ == "__main__":
+                multi_rassine(rassine_files_to_reduce, Nthreads=nthreads)
 
     make_sound('Racine Multiprocessing has finished')
 
@@ -146,9 +160,19 @@ elif process=='INTERSECT':
     if nthreads >= multicpu.cpu_count():
         print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
     else:
-        chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
-        pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
-        pool.map(run_intersect_continuum, chunks)
+        if float(py_ver)<3.7:
+            chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
+            pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
+            pool.map(run_intersect_continuum, chunks)
+        else:
+            def multi_inters(Input,Nthreads=1):
+                chunks = [Input[j::Nthreads] for j in range(Nthreads)]
+                pool = multicpu.Pool(processes=Nthreads,initializer=init, initargs=[multicpu.Lock()])
+                pool.map(run_intersect_continuum, chunks)
+                return
+
+            if __name__ == "__main__":
+                multi_inters(rassine_files_to_reduce, Nthreads=nthreads)
 
     make_sound('Racine Multiprocessing has finished')
 
@@ -161,9 +185,19 @@ elif process=='SAVGOL':
     if nthreads >= multicpu.cpu_count():
         print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
     else:
-        chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
-        pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
-        pool.map(run_matching_diff, chunks)
+        if float(py_ver)<3.7:
+            chunks = [rassine_files_to_reduce[j::nthreads] for j in range(nthreads)]
+            pool = multicpu.Pool(processes=nthreads, initializer=init, initargs=[multicpu.Lock()])
+            pool.map(run_matching_diff, chunks)
+        else:
+            def multi_savgol(Input,Nthreads=1):
+                chunks = [Input[j::Nthreads] for j in range(Nthreads)]
+                pool = multicpu.Pool(processes=Nthreads,initializer=init, initargs=[multicpu.Lock()])
+                pool.map(run_matching_diff, chunks)
+                return
+
+            if __name__ == "__main__":
+                multi_savgol(rassine_files_to_reduce, Nthreads=nthreads)
 
     make_sound('Racine Multiprocessing has finished')
 
@@ -176,12 +210,39 @@ elif process=='PREPROCESS':
     if nthreads >= multicpu.cpu_count():
         print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
     else:
-        chunks = np.array_split(rassine_files_to_preprocess, nthreads)
-        pool = multicpu.Pool(processes=nthreads,initializer=init, initargs=[multicpu.Lock()])
-        pool.map(run_preprocessing, chunks)
+        if float(py_ver)<3.7:
+            chunks = np.array_split(rassine_files_to_preprocess, nthreads)
+            pool = multicpu.Pool(processes=nthreads,initializer=init, initargs=[multicpu.Lock()])
+            pool.map(run_preprocessing, chunks)
+        else:
+            def multi_prepro(Input,Nthreads=1):
+                chunks = np.array_split(Input, Nthreads)
+                pool = multicpu.Pool(processes=Nthreads,initializer=init, initargs=[multicpu.Lock()])
+                pool.map(run_preprocessing, chunks)
+                return
+
+            if __name__ == "__main__":
+                multi_prepro(rassine_files_to_preprocess, Nthreads=nthreads)
 
     make_sound('Preprocessing in multiprocessed has finished')
 
+#elif process=='PREPROCESS': #for python 3.8 
+
+#    print('Number of files to preprocess %.0f'%(len(rassine_files_to_preprocess)))
+
+#    if nthreads >= multicpu.cpu_count():
+#        print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
+#    else:
+#        def multi_prepro(Input,Nthreads=1):
+#            chunks = np.array_split(Input, Nthreads)
+#            pool = Pool(processes=Nthreads)
+#            pool.map(run_preprocessing, chunks)
+#            return
+#
+#        if _name_ == "__main__":
+#            multi_prepro(rassine_files_to_preprocess, Nthreads=nthreads)
+#
+#    make_sound('Preprocessing in multiprocessed has finished')
 
 
 elif process=='MATCHING':
@@ -191,13 +252,22 @@ elif process=='MATCHING':
     if nthreads >= multicpu.cpu_count():
         print('Your number of cpu (%s) is smaller than the number your entered (%s), enter a smaller value please'%(multicpu.cpu_count(),nthreads))
     else:
-        args = preprocess_prematch_stellar_frame(rassine_files_to_reduce, dlambda=dlambda, rv=rv)
-        
-        split = np.array_split(np.arange(len(rassine_files_to_reduce)), nthreads)
-        
-        chunks = [(rassine_files_to_reduce[split[j]],(args[0],args[1],args[2],args[3],args[4],args[5],args[6][split[j]],args[7][split[j]],args[8][split[j]],args[9][split[j]],args[10][split[j]],args[11][split[j]],args[12])) for j in range(nthreads)]
-        
-        pool = multicpu.Pool(processes=nthreads)
-        pool.map(run_matching_wrapper, chunks)
+        if float(py_ver)<3.7:
+            args = preprocess_prematch_stellar_frame(rassine_files_to_reduce, dlambda=dlambda, rv=rv)
+            split = np.array_split(np.arange(len(rassine_files_to_reduce)), nthreads)
+            chunks = [(rassine_files_to_reduce[split[j]],(args[0],args[1],args[2],args[3],args[4],args[5],args[6][split[j]],args[7][split[j]],args[8][split[j]],args[9][split[j]],args[10][split[j]],args[11][split[j]],args[12])) for j in range(nthreads)]
+            pool = multicpu.Pool(processes=nthreads)
+            pool.map(run_matching_wrapper, chunks)
+        else:
+            def multi_matching(Input,Nthreads=1,dlambda=dlambda,rv=rv):
+                args = preprocess_prematch_stellar_frame(Input, dlambda=dlambda, rv=rv)
+                split = np.array_split(np.arange(len(Input)), Nthreads)
+                chunks = [(Input[split[j]], (args[0], args[1], args[2], args[3], args[4], args[5], args[6][split[j]], args[7][split[j]],args[8][split[j]], args[9][split[j]], args[10][split[j]], args[11][split[j]], args[12])) for j in range(Nthreads)]
+                pool = multicpu.Pool(processes=Nthreads)
+                pool.map(run_matching_wrapper, chunks)
+                return
+
+            if __name__ == "__main__":
+                multi_matching(rassine_files_to_reduce, Nthreads=nthreads)
 
     make_sound('Matching in multiprocessed has finished')
