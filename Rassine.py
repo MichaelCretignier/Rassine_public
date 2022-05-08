@@ -717,6 +717,8 @@ if (par_Rmax!=par_R)|(par_Rmax=='auto'):
         continuum_left = np.ravel(pd.DataFrame(penalite[::-1]).rolling(int(windows*dx)).quantile(1))[::-1]
         continuum_right[np.isnan(continuum_right)] = continuum_right[~np.isnan(continuum_right)][0] #define for the left border all nan value to the first non nan value
         continuum_left[np.isnan(continuum_left)] = continuum_left[~np.isnan(continuum_left)][-1] #define for the right border all nan value to the first non nan value
+        continuum_left[continuum_left==0] = 1e-5
+        continuum_right[continuum_right==0] = 1e-5
         both = np.array([continuum_right,continuum_left])
         penalite = np.max(both,axis=0)    
     
