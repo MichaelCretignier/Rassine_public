@@ -19,21 +19,25 @@ Created on Thu Feb  7 16:34:29 2019
 """
 
 from __future__ import print_function
+
 import matplotlib
+
 matplotlib.use('Qt5Agg',force=True)
-import numpy as np 
-import pandas as pd
-import matplotlib.pylab as plt
-from scipy.interpolate import interp1d
+import getopt
 import os
 import sys
 import time
-import getopt
+
+import matplotlib.pylab as plt
+import numpy as np
+import pandas as pd
 from astropy.io import fits
-from matplotlib.widgets import Slider, Button, RadioButtons
-from scipy.special import erf
-from scipy.optimize import curve_fit
 from matplotlib.ticker import MultipleLocator
+from matplotlib.widgets import Button, RadioButtons, Slider
+from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
+from scipy.special import erf
+
 import Rassine_functions as ras
 
 #get_ipython().run_line_magic('matplotlib','qt5')
@@ -304,14 +308,18 @@ miny = np.nanpercentile(spectrei,0.001) ; maxy = np.nanpercentile(spectrei,0.999
 len_x = maxx - minx
 len_y = np.max(spectrei) - np.min(spectrei)
 
-wave_5500 = int(ras.find_nearest(grid,5500)[0])
-continuum_5500 = np.nanpercentile(spectrei[wave_5500-50:wave_5500+50],95)
-SNR_0 = np.sqrt(continuum_5500)
+wave_ref_snr = 5500
+if wave_ref_snr<np.nanmin(grid):
+    wave_ref_snr = int(np.round(np.nanmean(grid),-2))
+idx_wave_ref_snr = int(ras.find_nearest(grid,wave_ref_snr)[0])
+
+continuum_ref_snr = np.nanpercentile(spectrei[idx_wave_ref_snr-50:idx_wave_ref_snr+50],95)
+SNR_0 = np.sqrt(continuum_ref_snr)
 if np.isnan(SNR_0):
     SNR_0 = -99
 
 if not only_print_end:
-    print(' Spectrum SNR at 5500 : %.0f'%(SNR_0))
+    print(' Spectrum SNR at %.0f : %.0f'%(wave_ref_snr,SNR_0))
 
 normalisation = np.float(len_y)/np.float(len_x) # stretch the y axis to scale the x and y axis 
 spectre = spectrei/normalisation
