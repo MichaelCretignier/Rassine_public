@@ -310,7 +310,7 @@ len_y = np.max(spectrei) - np.min(spectrei)
 
 wave_ref_snr = 5500
 if wave_ref_snr<np.nanmin(grid):
-    wave_ref_snr = int(np.round(np.nanmean(grid),-2))
+    wave_ref_snr = int(np.round(np.nanmean(grid),0))
 idx_wave_ref_snr = int(ras.find_nearest(grid,wave_ref_snr)[0])
 
 continuum_ref_snr = np.nanpercentile(spectrei[idx_wave_ref_snr-50:idx_wave_ref_snr+50],95)
