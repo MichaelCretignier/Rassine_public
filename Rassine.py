@@ -1455,7 +1455,7 @@ for j in range(5):
         
         mask_out_idx = [] 
         for j in cluster_idx:
-            which = np.argmin(flux[j])
+            which = np.argmin(flux[j.astype('int')])
             mask_out_idx.append(j[which])
     mask_out_idx = np.array(mask_out_idx)
     mask_out_idx = list(mask_out_idx[(mask_out_idx>3)&(mask_out_idx<(len(wave)-3))])
