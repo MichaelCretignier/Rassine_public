@@ -8,26 +8,33 @@ Created on Thu Feb  7 16:34:29 2019
 """
 
 from __future__ import print_function
+
 import matplotlib
+
 matplotlib.use('Qt5Agg',force=True)
-import numpy as np 
-from scipy.signal import savgol_filter
-from scipy.stats import norm
-from scipy.interpolate import interp1d
-import matplotlib.pylab  as plt
-import pandas as pd
-import pickle
-import sys
-from matplotlib.widgets import Slider, Button, RadioButtons
-import multiprocessing as multicpu
-from itertools import repeat
 import glob as glob
-from astropy.io import fits
-from astropy.time import Time
-import os 
+import multiprocessing as multicpu
+import os
+import pickle
+import platform
+import sys
+
 #from tqdm import tqdm 
 import time
-import platform
+from itertools import repeat
+
+import matplotlib.pylab as plt
+import numpy as np
+import pandas as pd
+from astropy.io import fits
+from astropy.time import Time
+from matplotlib.widgets import Button, RadioButtons, Slider
+from scipy.interpolate import interp1d
+from scipy.signal import savgol_filter
+from scipy.stats import norm
+
+np.warnings.filterwarnings('ignore', category=RuntimeWarning)
+
 
 py_ver = platform.python_version_tuple()
 py_ver = py_ver[0]+'.'+py_ver[1]
@@ -154,7 +161,7 @@ def clustering(array, tresh, num):
         for j in range(len(border)):
             if border[j,-1]>=num:
                 kept.append(array[border[j,0]:border[j,1]+2])
-        return np.array(kept) 
+        return np.array(kept,dtype='object') 
     else:
         return [[j] for j in array]
 
@@ -228,6 +235,39 @@ def gaussian(x, cen, amp, offset, wid):
     return amp * np.exp(-0.5*(x-cen)**2 / wid**2)+offset
 
 
+def conv_time(time):    
+    time = np.array(time)
+    if (type(time[0])==np.float64)|(type(time[0])==np.int64):
+        fmt='mjd'
+        if time[0]<2030:
+            fmt='decimalyear'
+        elif time[0]<50000:
+            time+=50000
+        if fmt=='mjd':
+            t0 = time
+            t1 = np.array([Time(i, format=fmt).decimalyear for i in time])
+            t2 = np.array([Time(i, format=fmt).isot for i in time])
+        else:
+            t0 = np.array([Time(i, format=fmt).mjd for i in time])
+            t1 = time
+            t2 = np.array([Time(i, format=fmt).isot for i in time])            
+    elif type(time[0])==np.str_:
+        fmt='isot'
+        t0 = np.array([Time(i, format=fmt).jd-2400000 for i in time]) 
+        t1 = np.array([Time(i, format=fmt).decimalyear for i in time])
+        t2 = time  
+    return t0,t1,t2
+
+def find_iso_in_filename(filename):
+    all_cut = [filename[i:i+23] for i in range(len(filename)-23)]
+    t=0
+    for string in all_cut:
+        try:
+            t = conv_time([string])[0][0]
+        except ValueError:
+            pass
+    return t
+
 def grouping(array, tresh, num):
     difference = abs(np.diff(array))
     cluster = (difference<tresh)
@@ -251,7 +291,7 @@ def grouping(array, tresh, num):
     for j in range(len(border)):
         if border[j,-1]>=num:
             kept.append(array[border[j,0]:border[j,1]+2])
-    return np.array(kept), border 
+    return np.array(kept,dtype='object'), border 
 
 
 def local_max(spectre,vicinity):
@@ -289,6 +329,7 @@ def intersect_all_continuum_sphinx(names, master_spectrum=None, copies_master=0,
     Possible to use multiprocessing with nthreads cpu.
     If you want to fix the anchors points, enter a master spectrum path and the number of copies you want of it. 
     """      
+    
     print('Loading of the files, wait ... \n')
     names = np.sort(names)
     sub_dico = 'output'
@@ -333,7 +374,7 @@ def intersect_all_continuum_sphinx(names, master_spectrum=None, copies_master=0,
     all_idx = np.hstack(save)
     
     #names = np.array(names)[np.array(snr).argsort()[::-1]]
-    save = np.array(save)#[np.array(snr).argsort()[::-1]]
+    save = np.array(save,dtype='object')#[np.array(snr).argsort()[::-1]]
     #snr  = np.array(snr)[np.array(snr).argsort()[::-1]]
 
     print('Computation of the intersection of the anchors points, wait ... \n')
@@ -1093,7 +1134,7 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
             
             jdb = np.array(mjd) + 0.5
             
-            out = {'flux':spectre,
+            out = {'flux':spectre, 'flux_err':0*spectre,
                    'instrument':instrument,'mjd':mjd,'jdb':jdb, 
                    'berv':berv, 'lamp_offset':lamp, 'plx_mas':plx_mas,'acc_sec':acc_sec,
                    'wave_min':wave_min,'wave_max':wave_max,'dwave':spectre_step}
@@ -1137,12 +1178,56 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
                 acc_sec = 0
             jdb = np.array(mjd) + 0.5
             
-            out = {'wave':grid,'flux':spectre,'flux_error':spectre_error,
+            out = {'wave':grid,'flux':spectre,'flux_err':spectre_error,
                    'instrument':instrument,'mjd':mjd,'jdb':jdb,
                    'berv':berv,'lamp_offset':lamp,'plx_mas':plx_mas,'acc_sec':acc_sec,
                    'wave_min':wave_min,'wave_max':wave_max,'dwave':spectre_step}
             
             save_pickle(directory+'/PREPROCESSED/'+name[:-5]+'.p',out)
+    elif instrument=='CSV':
+        for spectrum_name in files_to_process:
+            
+            counter+=1
+            if (counter+1)%100==1:
+                after_time = time.time()
+                time_it = (after_time - init_time)/100
+                init_time = after_time
+                if time_it>1:
+                    print('[INFO] Number of files preprocessed : --- %.0f/%0.f --- (%.2f s/it, remaining time : %.0f min %s s)'%(counter, number_of_files, time_it, ((number_of_files-counter)*time_it)//60, str(int(((number_of_files-counter)*time_it)%60)).zfill(2)))
+                else:
+                    print('[INFO] Number of files preprocessed : --- %.0f/%0.f --- (%.2f it/s, remaining time : %.0f min %s s)'%(counter,number_of_files,time_it**-1, ((number_of_files-counter)*time_it)//60, str(int(((number_of_files-counter)*time_it)%60)).zfill(2)))
+                    
+            directory, name = os.path.split(spectrum_name)
+            if not os.path.exists(directory+'/PREPROCESSED/'):
+                os.system('mkdir '+directory+'/PREPROCESSED/')
+            
+            tab = pd.read_csv(spectrum_name) # the flux of your spectrum
+            spectre = np.array(tab['flux'].astype('float64'))
+            if 'flux_std' in tab.keys():
+                spectre_error = np.array(tab['flux_std'].astype('float64'))
+            else:
+                spectre_error = spectre*0
+            grid = np.array(tab['wave'].astype('float64')) # the grid of wavelength of your spectrum (assumed equidistant in lambda)
+            begin = np.min(np.arange(len(spectre))[spectre>0]) # remove border spectrum with 0 value
+            end = np.max(np.arange(len(spectre))[spectre>0])   # remove border spectrum with 0 value
+            grid = grid[begin:end+1]
+            spectre = spectre[begin:end+1]
+            spectre_error = spectre_error[begin:end+1]
+
+            wave_min = np.min(grid)
+            wave_max = np.max(grid)      
+            spectre_step = np.mean(np.diff(grid))
+
+            jdb = find_iso_in_filename(spectrum_name)
+            mjd = (jdb-0.5)*(1-int(jdb==0))
+
+            out = {'wave':grid,'flux':spectre,'flux_err':spectre_error,
+                   'instrument':instrument,'mjd':mjd,'jdb':jdb,
+                   'berv':0,'lamp_offset':0,'plx_mas':0,'acc_sec':0,
+                   'wave_min':wave_min,'wave_max':wave_max,'dwave':spectre_step}
+            
+            save_pickle(directory+'/PREPROCESSED/'+name[:-4]+'.p',out)
+
     
     if final_sound:
         make_sound('Preprocessing files has finished')
@@ -1216,6 +1301,7 @@ def preprocess_prematch_stellar_frame(files_to_process, rv=0, dlambda=None):
                 if highest[2]>1000:
                     left = wave[int(null_flux[highest[0]])]
                     right = wave[int(null_flux[highest[1]])]
+
                     hole_left.append(find_nearest(wave, doppler_r(left,shift)[1])[1])
                     hole_right.append(find_nearest(wave, doppler_r(right,shift)[1])[1])
                 
@@ -1297,6 +1383,8 @@ def preprocess_match_stellar_frame(files_to_process, args=None, rv=0, dlambda=No
                 
         f = open_pickle(name)
         flux = f['flux']
+        flux_err = f['flux_err']
+
         if static_grid is None:
             wave = create_grid(wave_min[k], dlambda,len(flux))
             grid = wave.copy()
@@ -1309,8 +1397,10 @@ def preprocess_match_stellar_frame(files_to_process, args=None, rv=0, dlambda=No
                         
         if (rv[k]!=0)|(len(grid)!=len(wave)):
             nflux = interp1d(doppler_r(wave,rv[k])[1], flux, kind='cubic', bounds_error=False, fill_value='extrapolate')(grid)
+            nflux_err = interp1d(doppler_r(wave,rv[k])[1], flux_err, kind='linear', bounds_error=False, fill_value='extrapolate')(grid)
         else:
             nflux = flux
+            nflux_err = flux_err
 
         if static_grid is not None:
             wave = static_grid
@@ -1319,10 +1409,12 @@ def preprocess_match_stellar_frame(files_to_process, args=None, rv=0, dlambda=No
         mask2 = (wave>=(hole_left_k-dlambda/2.))&(wave<=(hole_right_k+dlambda/2.))
         nflux[mask2] = 0
         new_flux = nflux[mask]
+        nflux_err[mask2] = 1
+        new_flux_err = nflux_err[mask]
         
         continuum_5500 = np.nanpercentile(new_flux[wave_ref-50:wave_ref+50],95)
         SNR = np.sqrt(continuum_5500)
-        save_pickle(name,{'flux':new_flux, 
+        save_pickle(name,{'flux':new_flux, 'flux_err':new_flux_err,
                        'RV_sys':rv_mean, 'RV_shift':rv[k], 'SNR_5500':SNR, 
                        'berv':berv[k], 'lamp_offset':lamp[k], 'plx_mas':plx_mas[k], 'acc_sec':acc_sec[k],
                        'instrument':f['instrument'], 'mjd':f['mjd'], 'jdb':f['jdb'],

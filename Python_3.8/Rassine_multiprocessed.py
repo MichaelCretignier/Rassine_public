@@ -7,21 +7,26 @@ Created on Fri May 17 10:41:21 2019
 """
 
 from __future__ import print_function
+
+import getopt
+import glob as glob
 import multiprocessing as multicpu
 import os
-import numpy as np 
-import threading
-import pandas as pd
-import getopt
-import sys
-import glob as glob
-from Rassine_functions import make_sound
-from Rassine_functions import preprocess_fits
-from Rassine_functions import preprocess_prematch_stellar_frame
-from Rassine_functions import preprocess_match_stellar_frame
-from Rassine_functions import intersect_all_continuum
-from Rassine_functions import matching_diff_continuum
 import platform
+import sys
+import threading
+
+import numpy as np
+import pandas as pd
+
+from Rassine_functions import (
+    intersect_all_continuum,
+    make_sound,
+    matching_diff_continuum,
+    preprocess_fits,
+    preprocess_match_stellar_frame,
+    preprocess_prematch_stellar_frame,
+)
 
 py_ver = platform.python_version_tuple()
 py_ver = py_ver[0]+'.'+py_ver[1]
@@ -61,9 +66,9 @@ if len(sys.argv)>1:
         if j[0] == '-v': #process to run (PREPROCESS, MATCHING, RASSINE)
             process = j[1]     
         if j[0] == '-p': #only print end
-            plx_mas = np.float(j[1])
+            plx_mas = np.float64(j[1])
         if j[0] == '-w': #only print end
-            savgol_window = int(np.float(j[1]))
+            savgol_window = int(np.float64(j[1]))
         if j[0] == '-d': 
             dlambda = j[1]
             if dlambda == 'None':
@@ -73,7 +78,7 @@ if len(sys.argv)>1:
         if j[0] == '-k': #pickle file containing the RV to remove or float number with systemic velocity
             rv = j[1] 
             if len(rv.split('/'))==1:
-                rv = np.float(rv)
+                rv = np.float64(rv)
             else :
                 rv_file = rv
                 if rv_file.split('.')[-1]=='csv':
@@ -84,6 +89,11 @@ if len(sys.argv)>1:
                     print('Cannot read this file format')
 
 rassine_files_to_preprocess = np.sort(glob.glob(files_to_reduce+'*.fits'))
+if process=='PREPROCESS':
+    if not len(rassine_files_to_preprocess):
+        rassine_files_to_preprocess = np.sort(glob.glob(files_to_reduce+'*.csv'))
+        instrument='CSV'
+
 rassine_files_to_reduce = np.sort(glob.glob(files_to_reduce+'*.p'))
 
 if output_dir=='':
@@ -143,6 +153,9 @@ if process=='RASSINE':
         else:
             def multi_rassine(Input,Nthreads=1):
                 chunks = [Input[j::Nthreads] for j in range(Nthreads)]
+                for num,c in enumerate(chunks):
+                    print(' [INFO] Thread %.0f list of files : \n'%(num+1))
+                    print(c)
                 pool = multicpu.Pool(processes=Nthreads,initializer=init, initargs=[multicpu.Lock()])
                 pool.map(run_rassine, chunks)
                 return
@@ -174,7 +187,7 @@ elif process=='INTERSECT':
             if __name__ == "__main__":
                 multi_inters(rassine_files_to_reduce, Nthreads=nthreads)
 
-    make_sound('Racine Multiprocessing has finished')
+    make_sound('Racine clustering has finished')
 
 
 
@@ -199,7 +212,7 @@ elif process=='SAVGOL':
             if __name__ == "__main__":
                 multi_savgol(rassine_files_to_reduce, Nthreads=nthreads)
 
-    make_sound('Racine Multiprocessing has finished')
+    make_sound('Racine filtering has finished')
 
 
 

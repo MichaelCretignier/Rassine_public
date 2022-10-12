@@ -40,6 +40,8 @@ from scipy.special import erf
 
 import Rassine_functions as ras
 
+np.warnings.filterwarnings('ignore', category=RuntimeWarning)
+
 #get_ipython().run_line_magic('matplotlib','qt5')
 
 python_version = sys.version[0]
@@ -249,7 +251,7 @@ if type(par_stretching)!=str:
         print('[WARNING] par_stretching value fixed at 3')
         par_stretching = 3.0
 else:
-    if (float(par_stretching.split('_')[1])>1)|(float(par_stretching.split('_')[1])<0):
+    if (np.float(par_stretching.split('_')[1])>1)|(np.float(par_stretching.split('_')[1])<0):
         print('[WARNING] par_stretching automatic value should be between 0 and 1')
         print('[WARNING] par_stretching value fixed at 0.5')
         par_stretching = 'auto_0.5'        
@@ -309,8 +311,8 @@ len_x = maxx - minx
 len_y = np.max(spectrei) - np.min(spectrei)
 
 wave_ref_snr = 5500
-if wave_ref_snr<np.nanmin(grid):
-    wave_ref_snr = int(np.round(np.nanmean(grid),0))
+if (wave_ref_snr<np.nanmin(grid))|(wave_ref_snr>np.nanmax(grid)):
+    wave_ref_snr = int(np.round(np.nanmean(grid),-2))
 idx_wave_ref_snr = int(ras.find_nearest(grid,wave_ref_snr)[0])
 
 continuum_ref_snr = np.nanpercentile(spectrei[idx_wave_ref_snr-50:idx_wave_ref_snr+50],95)
@@ -358,7 +360,7 @@ for iteration in range(5): #k-sigma clipping 5 times
 
 conversion_fwhm_sig = (10*minx/(2.35*3e5)) #5sigma width in the blue
 
-if  par_fwhm == 'auto':
+if par_fwhm == 'auto':
 
     mask = np.zeros(len(spectre))
     continuum_right = np.ravel(pd.DataFrame(spectre).rolling(int(30/dgrid)).quantile(1)) #by default rolling maxima in a 30 angstrom window
@@ -654,7 +656,6 @@ if par_R=='auto':
 if out_of_calibration:
     windows = 2. #2 typical line width scale (small window for the first continuum)
     big_windows = 20.  #20typical line width scale (large window for the second continuum)
-
 
 law_chromatic = wave/minx
 
@@ -1125,6 +1126,16 @@ if not only_print_end:
     print(' Time of the step : %.2f'%(loc_cutting_time-loc_rolling_time))
 
 # =============================================================================
+# CAII MASKING
+# =============================================================================
+
+mask_caii = ((wave>3929)&(wave<3937))|((wave>3964)&(wave<3972))  
+
+wave = wave[~mask_caii]
+flux = flux[~mask_caii]
+index = index[~mask_caii]
+
+# =============================================================================
 # OUTLIERS REMOVING
 # =============================================================================
 
@@ -1455,6 +1466,7 @@ for j in range(5):
         
         mask_out_idx = [] 
         for j in cluster_idx:
+            j = np.array(j)
             which = np.argmin(flux[j.astype('int')])
             mask_out_idx.append(j[which])
     mask_out_idx = np.array(mask_out_idx)
