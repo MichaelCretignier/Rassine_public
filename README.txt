@@ -1,4 +1,10 @@
 ————————
+NEWS :
+————————
+
+For a Python version above 3.8, replace the five codes with the ones stored in the Python_3.8 directory.
+
+————————
 IMPORTANT INFORMATIONS :
 ————————
 
