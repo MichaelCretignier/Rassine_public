@@ -918,7 +918,7 @@ if (par_Rmax!=par_R)|(par_Rmax=='auto'):
         elif reg.split('_')[0] == 'sigmoid':
            center = float(reg.split('_')[-2])
            width = float(reg.split('_')[-1])
-           radius = law_chromatic * (par_R + (par_Rmax-par_R) * (1+np.exp(-width*(penalite_graph-center))) ** -1)
+           radius = law_chromatic * (par_R + (par_Rmax-par_R) * (1+np.exp(-10*width*(penalite_graph-center))) ** -1)
            par_model = reg
         else:
             if not only_print_end:
