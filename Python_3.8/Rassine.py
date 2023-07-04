@@ -73,6 +73,7 @@ par_fwhm = config['fwhm_ccf']
 CCF_mask = config['CCF_mask']          
 RV_sys = config['RV_sys']                    
 mask_telluric = config['mask_telluric']
+mask_broadline = config['mask_broadline']
 par_R = config['min_radius']               
 par_Rmax = config['max_radius']        
 par_reg_nu = config['model_penality_radius']
@@ -1582,6 +1583,16 @@ if feedback:
     plt.close()
     wave, flux, index = t.vecx, t.vecy, t.vecz
 
+# =============================================================================
+# WINDOWS BROADLINE MANUAL REJECTION
+# =============================================================================
+
+if len(mask_broadline):
+    for w in mask_broadline:
+        mask_broad = (wave>=w[0])&(wave<=w[1])
+        wave = wave[~mask_broad]
+        flux = flux[~mask_broad]
+        index = index[~mask_broad]
 
 # =============================================================================
 # PHYSICAL MODEL FITTING (to develop)

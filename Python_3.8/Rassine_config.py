@@ -52,6 +52,10 @@ mask_telluric = [[6275,6330],   # a list of left and right borders to eliminate 
                  [6470,6577],   # only if CCF = 'master' and par_fwhm = 'auto'
                  [6866,8000]] 
 
+mask_broadline = [[3960,3980],   # a list of left and right borders to eliminate from the anchor point candidates
+                 [6560,6562],   
+                 [10034,10064]] 
+
 par_R = 'auto'             # minimum radius of the rolling pin in angstrom ('auto' available)                  <--- PARAMETER 4
 par_Rmax = 'auto'          # maximum radius of the rolling pin in angstrom ('auto' available)                  <--- PARAMETER 5
 par_reg_nu = 'poly_1.0'    # penality-radius law                                                               <--- PARAMETER 6
@@ -92,6 +96,7 @@ config = {'spectrum_name':spectrum_name,
           'CCF_mask':CCF_mask,
           'RV_sys':RV_sys,
           'mask_telluric':mask_telluric,
+          'mask_broadline':mask_broadline,
           'min_radius':par_R,
           'max_radius':par_Rmax,
           'model_penality_radius':par_reg_nu,
