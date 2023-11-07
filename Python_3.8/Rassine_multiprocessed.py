@@ -19,17 +19,13 @@ import threading
 import numpy as np
 import pandas as pd
 
-from Rassine_functions import (
-    intersect_all_continuum,
-    make_sound,
-    matching_diff_continuum,
-    preprocess_fits,
-    preprocess_match_stellar_frame,
-    preprocess_prematch_stellar_frame,
-)
+from Rassine_functions import (intersect_all_continuum, make_sound,
+                               matching_diff_continuum, preprocess_fits,
+                               preprocess_match_stellar_frame,
+                               preprocess_prematch_stellar_frame)
 
 py_ver = platform.python_version_tuple()
-py_ver = py_ver[0]+'.'+py_ver[1]
+py_ver = str(int(py_ver[0])+int(py_ver[1])//10)+'.'+py_ver[1]
 
 """COMMMENT OF DEVELOPPERS : WE ADMISE THE USER TO USE THE RASSINE_TRIGGER.PY RATHER THAN TO INTERACT DIRECTLY WITH THE MULTIPROCESSED FILE HERE"""
 

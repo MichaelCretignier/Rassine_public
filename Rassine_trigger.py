@@ -7,16 +7,20 @@ Created on Fri Nov 22 11:50:04 2019
 """
 
 from __future__ import print_function
+
 import matplotlib
+
 matplotlib.use('Qt5Agg',force=True)
-import glob as glob 
-import Rassine_functions as ras      
-import numpy as np 
-import matplotlib.pylab as plt
+import getopt
+import glob as glob
 import os
 import sys
+
+import matplotlib.pylab as plt
+import numpy as np
 import pandas as pd
-import getopt
+
+import Rassine_functions as ras
 
 cwd = os.getcwd()
 
@@ -57,7 +61,7 @@ rassine_diff_continuum = 1
 # =============================================================================
 
 if len(sys.argv)>1:
-    optlist,args =  getopt.getopt(sys.argv[1:],'s:i:a:')
+    optlist,args =  getopt.getopt(sys.argv[1:],'s:i:a:m:')
     for j in optlist:
         if j[0] == '-s': 
             star = j[1]
@@ -65,7 +69,8 @@ if len(sys.argv)>1:
             instrument = j[1]
         if j[0] == '-a': 
             full_auto = bool(int(j[1]))
-        
+        if j[0] == '-m': 
+            use_master_as_reference = bool(int(j[1]))
 
 if bin_length_stack != 0:
     fileroot_files_to_rassine = 'Stacked' #usual fileroot of the Stacked spectra produce by RASSINE

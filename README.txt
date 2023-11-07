@@ -12,7 +12,7 @@ IMPORTANT INFORMATIONS :
 ————————
 
 Please cite Cretignier et al., 2020 paper (see the paper in the directory for a better understanding of the code).
-ADS Link : https://ui.adsabs.harvard.edu/abs/2020arXiv200613098C/abstract
+ADS Link : https://ui.adsabs.harvard.edu/abs/2020A%26A...640A..42C/abstract
 
 RASSINE is a free access (https://github.com/MichaelCretignier/Rassine_public) Python3 code, compatible with Python2, which is a simple tool to normalise spectra with the less "fine-tuning buttons" possible.
 

@@ -18,7 +18,6 @@ import os
 import pickle
 import platform
 import sys
-
 #from tqdm import tqdm 
 import time
 from itertools import repeat
@@ -37,7 +36,7 @@ np.warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 
 py_ver = platform.python_version_tuple()
-py_ver = py_ver[0]+'.'+py_ver[1]
+py_ver = str(int(py_ver[0])+int(py_ver[1])//10)+'.'+py_ver[1]
 
 # =============================================================================
 # FUNCTIONS LIBRARY
