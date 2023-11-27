@@ -7,16 +7,20 @@ Created on Fri Nov 22 11:50:04 2019
 """
 
 from __future__ import print_function
+
 import matplotlib
+
 matplotlib.use('Qt5Agg',force=True)
-import glob as glob 
-import Rassine_functions as ras      
-import numpy as np 
-import matplotlib.pylab as plt
+import getopt
+import glob as glob
 import os
 import sys
+
+import matplotlib.pylab as plt
+import numpy as np
 import pandas as pd
-import getopt
+
+import Rassine_functions as ras
 
 cwd = os.getcwd()
 
@@ -27,15 +31,15 @@ cwd = os.getcwd()
 instrument = 'HARPS'                                                     # instrument (either HARPS, HARPN, CORALIE or ESPRESSO for the moment)
 dir_spec_timeseries = cwd+'/spectra_library/CenB/'   # directory containing the s1d spectra timeseries
 
-nthreads_preprocess = 4               # number of threads in parallel for the preprocessing
-nthreads_matching = 4                 # number of threads in parallel for the matching (more than 2 is not efficient for some reasons...) 
+nthreads_preprocess = 8               # number of threads in parallel for the preprocessing
+nthreads_matching = 2                 # number of threads in parallel for the matching (more than 2 is not efficient for some reasons...) 
 nthreads_rassine = 4                  # number of threads in parallel for the normalisation (BE CAREFUL RASSINE NEED A LOT OF RAM DEPENDING ON SPECTRUM LENGTH)
-nthreads_intersect = 4                # number of threads in parallel for the post-continuum fit 
+nthreads_intersect = 6                # number of threads in parallel for the post-continuum fit 
 
 rv_timeseries = -22.7              # RV systemyc velocity or RV time-series to remove in kms (only if binaries with ~kms RV amplitudes) stored in a pickle dictionnary inside 'model' keyword 
 
 dlambda = None                     # wavelength grid step of the equidistant grid, only if unevenly wavelength grid or lack of homogeneity in spectra time-series
-bin_length_stack = 1               # length of the binning for the stacking in days
+bin_length_stack = 0               # length of the binning for the stacking in days
 dbin = 0                           # dbin to shift the binning (0.5 for solar data)
 use_master_as_reference = True    # use master spectrum as reference for the clustering algorithm (case of low SNR spectra)
 full_auto = False                  # to disable the sphinx on the master, intersect and matching stage
@@ -57,7 +61,7 @@ rassine_diff_continuum = 1
 # =============================================================================
 
 if len(sys.argv)>1:
-    optlist,args =  getopt.getopt(sys.argv[1:],'s:i:a:')
+    optlist,args =  getopt.getopt(sys.argv[1:],'s:i:a:m:')
     for j in optlist:
         if j[0] == '-s': 
             star = j[1]
@@ -65,10 +69,8 @@ if len(sys.argv)>1:
             instrument = j[1]
         if j[0] == '-a': 
             full_auto = bool(int(j[1]))
-        
-        dir_spec_timeseries = '/Users/cretignier/Documents/Yarara/'+star+'/data/s1d/'+instrument+'/'   
-        rv_timeseries = '/Users/cretignier/Documents/Yarara/'+star+'/data/s1d/'+instrument+'/DACE_TABLE/Dace_extracted_table.csv'
-
+        if j[0] == '-m': 
+            use_master_as_reference = bool(int(j[1]))
 
 if bin_length_stack != 0:
     fileroot_files_to_rassine = 'Stacked' #usual fileroot of the Stacked spectra produce by RASSINE

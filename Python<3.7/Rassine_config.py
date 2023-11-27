@@ -25,7 +25,7 @@ cwd = os.getcwd()
 #  ENTRIES
 # =============================================================================
 
-spectrum_name = cwd+'/spectra_library/spectrum_cenB.p' # full path of your spectrum pickle/csv file
+spectrum_name = cwd+'/spectra_library/spectrum_cenB.csv' # full path of your spectrum pickle/csv file
 output_dir  = cwd+'/output/'                             # directory where output files are written
 
 synthetic_spectrum = False   # True if working with a noisy-free synthetic spectra 

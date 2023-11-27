@@ -123,13 +123,13 @@ if len(sys.argv)>1:
             anchor_file = j[1]
         if j[0] == '-r': #Radius minimum
             par_R = j[1]
-            par_R = float(par_R)
+            par_R = np.float(par_R)
         if j[0] == '-R': #Radius maximum
             par_Rmax = j[1]
-            par_Rmax = float(par_Rmax)
+            par_Rmax = np.float(par_Rmax)
         if j[0] == '-p': #par_stretching
             par_stretching = j[1]
-            par_stretching = float(par_stretching)
+            par_stretching = np.float(par_stretching)
         if j[0] == '-a': #feedback
             if j[1]!='unspecified':
                 feedback = j[1]
@@ -252,7 +252,7 @@ if type(par_stretching)!=str:
         print('[WARNING] par_stretching value fixed at 3')
         par_stretching = 3.0
 else:
-    if (float(par_stretching.split('_')[1])>1)|(float(par_stretching.split('_')[1])<0):
+    if (np.float(par_stretching.split('_')[1])>1)|(np.float(par_stretching.split('_')[1])<0):
         print('[WARNING] par_stretching automatic value should be between 0 and 1')
         print('[WARNING] par_stretching value fixed at 0.5')
         par_stretching = 'auto_0.5'        
@@ -296,7 +296,6 @@ if len(np.unique(np.diff(grid)))>1:
     grid = new_grid.copy()
     
 dgrid = grid[1] - grid[0]
-dgrid/=5
 
 sorting = grid.argsort() #sort the grid of wavelength
 grid = grid[sorting]
@@ -325,7 +324,7 @@ if np.isnan(SNR_0):
 if not only_print_end:
     print(' Spectrum SNR at %.0f : %.0f'%(wave_ref_snr,SNR_0))
 
-normalisation = float(len_y)/float(len_x) # stretch the y axis to scale the x and y axis 
+normalisation = np.float(len_y)/np.float(len_x) # stretch the y axis to scale the x and y axis 
 spectre = spectrei/normalisation
 
 if synthetic_spectrum:
@@ -589,13 +588,13 @@ if not only_print_end:
     print(' Suggestion of a streching parameter to try : %.0f +/- %.0f'%(calib_low + (calib_high-calib_low)*0.5,(calib_high-calib_low)*0.25))
 
 out_of_calibration = False
-if par_fwhm/conversion_fwhm_sig>30:
+if par_fwhm/conversion_fwhm_sig>30: 
     out_of_calibration = True
     print(' [WARNING] Star out of the FWHM calibration range')
 
 if type(par_stretching) == str:
     if not out_of_calibration:
-        par_stretching = calib_low + (calib_high-calib_low) * float(par_stretching.split('_')[1])
+        par_stretching = calib_low + (calib_high-calib_low) * np.float(par_stretching.split('_')[1])
         #par_stretching = 20*computed_parameters #old calibration
         if not only_print_end:
             print(' [AUTO] par_stretching fixed : %.2f'%(par_stretching))
@@ -788,14 +787,14 @@ if (par_Rmax!=par_R)|(par_Rmax=='auto'):
     
     if feedback:
         t = np.linspace(0,1,100)
-        radius = grid/minx * ( par_R + (par_Rmax - par_R) * penalite_step ** (float(reg.split('_')[-1])))
-        law = par_R + (par_Rmax - par_R) * t ** float(reg.split('_')[-1])
+        radius = grid/minx * ( par_R + (par_Rmax - par_R) * penalite_step ** (np.float(reg.split('_')[-1])))
+        law = par_R + (par_Rmax - par_R) * t ** np.float(reg.split('_')[-1])
         if reg.split('_')[0] == 'poly':
             alpha1 = 1 ; alpha2 = 0 ; actif = 0 ; ini = 0.5
         elif reg.split('_')[0] == 'sigmoid':
-            alpha1 = 0 ; alpha2 = 1 ; actif = 1  ; ini = float(reg.split('_')[-2])         
-        radius2 = grid/minx * (par_R + (par_Rmax - par_R) * (1+np.exp(-10*float(reg.split('_')[-1]) * (penalite_step - ini))) ** -1)
-        law2 = par_R + (par_Rmax - par_R) * (1+np.exp(-10*float(reg.split('_')[-1]) * (t-ini))) ** -1
+            alpha1 = 0 ; alpha2 = 1 ; actif = 1  ; ini = np.float(reg.split('_')[-2])         
+        radius2 = grid/minx * (par_R + (par_Rmax - par_R) * (1+np.exp(-10*np.float(reg.split('_')[-1]) * (penalite_step - ini))) ** -1)
+        law2 = par_R + (par_Rmax - par_R) * (1+np.exp(-10*np.float(reg.split('_')[-1]) * (t-ini))) ** -1
         
         fig = plt.figure(figsize=(12,6))
         plt.subplot(3,2,1)
@@ -827,7 +826,7 @@ if (par_Rmax!=par_R)|(par_Rmax=='auto'):
 
         axcolor = 'whitesmoke'
         axexponent = plt.axes([0.55, 0.25, 0.35, 0.03], facecolor = axcolor)
-        sexponent = Slider(axexponent, 'Nu', 0.1, 5.0, valinit=float(reg.split('_')[-1]), valstep=0.05)
+        sexponent = Slider(axexponent, 'Nu', 0.1, 5.0, valinit=np.float(reg.split('_')[-1]), valstep=0.05)
         axexponent2 = plt.axes([0.55, 0.20, 0.35, 0.03], facecolor = axcolor)
         sexponent2 = Slider(axexponent2, 'Mu', 0, 1, valinit=ini, valstep=0.05)
         axrmin = plt.axes([0.55, 0.3, 0.35, 0.03], facecolor = axcolor)
@@ -913,12 +912,12 @@ if (par_Rmax!=par_R)|(par_Rmax=='auto'):
         plt.close()
     else:
         if reg.split('_')[0] == 'poly':
-           expo = float(reg.split('_')[-1])
+           expo = np.float(reg.split('_')[-1])
            radius = law_chromatic * (par_R + (par_Rmax-par_R) * penalite_graph ** (expo))
            par_model = reg
         elif reg.split('_')[0] == 'sigmoid':
-           center = float(reg.split('_')[-2])
-           width = float(reg.split('_')[-1])
+           center = np.float(reg.split('_')[-2])
+           width = np.float(reg.split('_')[-1])
            radius = law_chromatic * (par_R + (par_Rmax-par_R) * (1+np.exp(-10*width*(penalite_graph-center))) ** -1)
            par_model = reg
         else:
@@ -955,7 +954,7 @@ while loop == 'y':
     R_old = par_R
     
     while (len(wave)-j>3):
-        par_R = float(radius[j]) #take the radius from the penality law
+        par_R = np.float(radius[j]) #take the radius from the penality law
         mask = (distance[j,:]>0)&(distance[j,:]<2.*par_R) #recompute the points closer than the diameter if Radius changed with the penality      
         while np.sum(mask)==0:
             par_R *=1.5
@@ -1005,9 +1004,9 @@ while loop == 'y':
         if loop=='n':
             break
         if (loop != 'y')&(loop != 'n'):
-            par_R = float(loop)*R_old
-            radius = float(loop)*radius
-            k_factor.append(float(loop))
+            par_R = np.float(loop)*R_old
+            radius = np.float(loop)*radius
+            k_factor.append(np.float(loop))
             loop = 'y'
         elif loop == 'y':
             par_R = 1.5*R_old
