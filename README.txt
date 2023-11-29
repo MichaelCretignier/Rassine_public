@@ -5,7 +5,7 @@ EMAIL : michael.cretignier@physics.ox.ac.uk
 NEWS :
 ————————
 
-For a Python version above 3.8, replace the five codes with the ones stored in the Python_3.8 directory.
+For a Python version below 3.7, replace the five codes with the ones stored in the Python<3.7 directory.
 
 ————————
 IMPORTANT INFORMATIONS :
