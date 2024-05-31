@@ -8,25 +8,28 @@ Created on Thu Feb  7 16:34:29 2019
 """
 
 from __future__ import print_function
+
 import matplotlib
+
 matplotlib.use('Qt5Agg',force=True)
-import numpy as np 
-from scipy.signal import savgol_filter
-from scipy.stats import norm
-from scipy.interpolate import interp1d
-import matplotlib.pylab  as plt
-import pandas as pd
+import glob as glob
+import multiprocessing as multicpu
+import os
 import pickle
 import sys
-from matplotlib.widgets import Slider, Button, RadioButtons
-import multiprocessing as multicpu
-from itertools import repeat
-import glob as glob
-from astropy.io import fits
-from astropy.time import Time
-import os 
 #from tqdm import tqdm 
 import time
+from itertools import repeat
+
+import matplotlib.pylab as plt
+import numpy as np
+import pandas as pd
+from astropy.io import fits
+from astropy.time import Time
+from matplotlib.widgets import Button, RadioButtons, Slider
+from scipy.interpolate import interp1d
+from scipy.signal import savgol_filter
+from scipy.stats import norm
 
 # =============================================================================
 # FUNCTIONS LIBRARY
@@ -1100,9 +1103,17 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
                 os.system('mkdir '+directory+'/PREPROCESSED/')
 
             header = fits.getheader(spectrum_name) # load the fits header
-            spectre = fits.getdata(spectrum_name)['flux'].astype('float64') # the flux of your spectrum
-            spectre_error = fits.getdata(spectrum_name)['error'].astype('float64') # the flux of your spectrum
-            grid = fits.getdata(spectrum_name)['wavelength_air'].astype('float64') # the grid of wavelength of your spectrum (assumed equidistant in lambda)
+            data_fits = fits.getdata(spectrum_name)
+
+            try:
+                grid = data_fits['wavelength_air'].astype('float64') # the grid of wavelength of your spectrum (assumed equidistant in lambda)
+                spectre = data_fits['flux'].astype('float64') # the flux of your spectrum
+                spectre_error = data_fits['error'].astype('float64') # the flux of your spectrum
+            except:
+                grid = data_fits['wave_air'][0].astype('float64') # the grid of wavelength of your spectrum (assumed equidistant in lambda)
+                spectre = data_fits['flux'][0].astype('float64') # the flux of your spectrum
+                spectre_error = data_fits['err'][0].astype('float64') # the flux of your spectrum
+            
             begin = np.min(np.arange(len(spectre))[spectre>0]) # remove border spectrum with 0 value
             end = np.max(np.arange(len(spectre))[spectre>0])   # remove border spectrum with 0 value
             grid = grid[begin:end+1]
