@@ -1123,16 +1123,19 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
             wave_max = np.max(grid)
             spectre_step = np.mean(np.diff(grid))
             mjd = header['MJD-OBS']
-            try:
-                berv = header['HIERARCH ESO QC BERV']
-                header_kw = 'ESO'
-            except: #for HARPN new drs
-                berv = header['HIERARCH TNG QC BERV']
-                header_kw = 'TNG'
+            
+            kw = 'ESO'
+            if 'HIERARCH TNG QC BERV' in header:
+                kw = 'TNG'
+
             lamp = 0 #header['HIERARCH ESO DRS CAL TH LAMP OFFSET'] no yet available
             try:
-                pma = header['HIERARCH %s TEL TARG PMA'%(header_kw)]*1000
-                pmd = header['HIERARCH %s TEL TARG PMD'%(header_kw)]*1000
+                berv = float(header['HIERARCH '+kw+' QC BERV'])
+            except:
+                berv = 0
+            try:
+                pma = header['HIERARCH '+kw+' TEL TARG PMA']*1000
+                pmd = header['HIERARCH '+kw+' TEL TARG PMD']*1000
             except:
                 pma=0
                 pmd=0
