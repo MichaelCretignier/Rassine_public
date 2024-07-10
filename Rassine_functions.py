@@ -1057,7 +1057,7 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
     counter = 0
     init_time = time.time()
     
-    if (instrument=='HARPS')|(instrument=='CORALIE')|(instrument=='HARPN'):
+    if (instrument=='HARPS')|(instrument=='CORALIE')|(instrument=='HARPN')|(instrument=='SOPHIE'):
         
         directory0, dustbin = os.path.split(files_to_process[0])
         try:
@@ -1100,6 +1100,8 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
             kw = 'ESO'
             if instrument=='HARPN':
                 kw='TNG'
+            elif instrument=='SOPHIE':
+                kw='OHP'
 
             berv = header['HIERARCH '+kw+' DRS BERV']
             lamp = header['HIERARCH '+kw+' DRS CAL TH LAMP OFFSET']
