@@ -7,16 +7,20 @@ Created on Fri Nov 22 11:50:04 2019
 """
 
 from __future__ import print_function
+
 import matplotlib
+
 matplotlib.use('Qt5Agg',force=True)
-import glob as glob 
-import Rassine_functions as ras      
-import numpy as np 
-import matplotlib.pylab as plt
+import getopt
+import glob as glob
 import os
 import sys
+
+import matplotlib.pylab as plt
+import numpy as np
 import pandas as pd
-import getopt
+
+import Rassine_functions as ras
 
 cwd = os.getcwd()
 
@@ -24,7 +28,7 @@ cwd = os.getcwd()
 # parameters
 # =============================================================================
 
-instrument = 'HARPS'                                                     # instrument (either HARPS, HARPN, CORALIE or ESPRESSO for the moment)
+instrument = 'HARPS'                                                     # instrument DRS (either HARPS, HARPN, CORALIE or ESPRESSO for the moment)
 dir_spec_timeseries = cwd+'/spectra_library/CenB/'   # directory containing the s1d spectra timeseries
 
 nthreads_preprocess = 4               # number of threads in parallel for the preprocessing

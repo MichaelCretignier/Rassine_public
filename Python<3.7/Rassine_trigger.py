@@ -28,7 +28,7 @@ cwd = os.getcwd()
 # parameters
 # =============================================================================
 
-instrument = 'HARPS'                                                     # instrument (either HARPS, HARPN, CORALIE or ESPRESSO for the moment)
+instrument = 'HARPS'                                                     # instrument DRS (either HARPS, HARPN, CORALIE or ESPRESSO for the moment)
 dir_spec_timeseries = cwd+'/spectra_library/CenB/'   # directory containing the s1d spectra timeseries
 
 nthreads_preprocess = 8               # number of threads in parallel for the preprocessing
