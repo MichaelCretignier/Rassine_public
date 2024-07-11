@@ -72,12 +72,6 @@ if len(sys.argv)>1:
         if j[0] == '-m': 
             use_master_as_reference = bool(int(j[1]))
 
-if bin_length_stack != 0:
-    fileroot_files_to_rassine = 'Stacked' #usual fileroot of the Stacked spectra produce by RASSINE
-else:
-    fileroot_files_to_rassine = 'Prepared' #usual fileroot of the Unstacked spectra produce by RASSINE
-
-
 if not os.path.exists(dir_spec_timeseries+'MASTER/'):
     os.system('mkdir '+dir_spec_timeseries+'MASTER/')
 
@@ -118,7 +112,7 @@ if rassine_normalisation_master:
 master_name = glob.glob(dir_spec_timeseries+'MASTER/RASSINE_Master_spectrum*.p')[0]
 if rassine_normalisation:
     print('[STEP INFO] Normalisation frame...')
-    os.system('python Rassine_multiprocessed.py -v RASSINE -s '+dir_spec_timeseries+'STACKED/'+fileroot_files_to_rassine+' -n '+str(nthreads_rassine)+' -l '+master_name+' -P '+str(True)+' -e '+str(False))
+    os.system('python Rassine_multiprocessed.py -v RASSINE -s '+dir_spec_timeseries+'STACKED/Stacked -n '+str(nthreads_rassine)+' -l '+master_name+' -P '+str(True)+' -e '+str(False))
 
 
 master_spectrum_name = None

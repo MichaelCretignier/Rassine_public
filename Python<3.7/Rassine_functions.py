@@ -1461,10 +1461,7 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, make_master=Tru
                'nb_spectra_stacked':nb_spectra_stacked,
                'arcfiles':name_root_files} 
         
-        if len(group)!=len(files_to_process):
-            save_pickle(directory+'/Stacked_spectrum_bin_'+str(bin_length)+'.'+date_name+'.p',out)
-        else:
-            save_pickle(directory+'/Prepared_'+files_to_process[num].split('/')[-1],out)
+        save_pickle(directory+'/Stacked_spectrum_bin_'+str(bin_length)+'.'+date_name+'.p',out)
     
     all_snr = np.array(all_snr)
 
