@@ -418,13 +418,16 @@ if par_fwhm == 'auto':
         print(' [AUTO] FWHM computed from the CCF is about : %.2f [km/s]'%(popt[-1]*2.35))
     if errors_fit[-1]/popt[-1]>0.2:
         print(' [WARNING] Error on the FWHM of the CCF > 20% ! Check the CCF and/or enter you own mask')
-        plt.figure(figsize=(10,6))
-        plt.plot(vrad/1000,ccf,label='CCF')
-        plt.plot(vrad/1000,ras.gaussian(vrad/1000,popt[0],popt[1],popt[2],popt[3]),label='gaussian fit')
-        plt.legend()
-        plt.title('Debug graphic : CCF and fit to determine the FWHM\n Check that the fit has correctly converged')
-        plt.xlabel('Vrad [km/s]')
-        plt.ylabel('CCF')
+
+    plt.figure(figsize=(10,6))
+    plt.plot(vrad/1000,ccf,label='CCF')
+    plt.plot(vrad/1000,ras.gaussian(vrad/1000,popt[0],popt[1],popt[2],popt[3]),label='gaussian fit')
+    plt.legend()
+    plt.title('Debug graphic : CCF and fit to determine the FWHM\n Check that the fit has correctly converged')
+    plt.xlabel('Vrad [km/s]')
+    plt.ylabel('CCF')
+    plt.savefig(output_dir+new_file+'_CCF.png')
+    print(' [INFO] CCF saved under %s'%(output_dir+new_file+'_CCF.png'))
         
     par_fwhm = popt[-1]*2.35
 
