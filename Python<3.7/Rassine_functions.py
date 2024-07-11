@@ -1090,7 +1090,7 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
             
             jdb = np.array(mjd) + 0.5
             
-            out = {'flux':spectre,
+            out = {'flux':spectre,'flux_err':spectre*0,
                    'instrument':instrument,'mjd':mjd,'jdb':jdb, 
                    'berv':berv, 'lamp_offset':lamp, 'plx_mas':plx_mas,'acc_sec':acc_sec,
                    'wave_min':wave_min,'wave_max':wave_max,'dwave':spectre_step}
@@ -1150,7 +1150,7 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
                 acc_sec = 0
             jdb = np.array(mjd) + 0.5
             
-            out = {'wave':grid,'flux':spectre,'flux_error':spectre_error,
+            out = {'wave':grid,'flux':spectre,'flux_err':spectre_error,
                    'instrument':instrument,'mjd':mjd,'jdb':jdb,
                    'berv':berv,'lamp_offset':lamp,'plx_mas':plx_mas,'acc_sec':acc_sec,
                    'wave_min':wave_min,'wave_max':wave_max,'dwave':spectre_step}

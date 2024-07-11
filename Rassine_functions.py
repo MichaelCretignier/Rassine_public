@@ -1102,7 +1102,7 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
                 kw='TNG'
             elif instrument=='SOPHIE':
                 kw='OHP'
-
+            
             berv = header['HIERARCH '+kw+' DRS BERV']
             lamp = header['HIERARCH '+kw+' DRS CAL TH LAMP OFFSET']
             try:

@@ -205,9 +205,18 @@ else: # to load a pickle dictionnary, csv file or txt file
         data = pd.read_csv(spectrum_name) # load the pickle dictionnary
         spectrei = np.array(data[column_flux])  # the flux of your spectrum
         grid = np.array(data[column_wave])      # the grid of wavelength of your spectrum
+        try:
+            spectrei_err = np.array(data[column_flux+'_err']) # the error flux of your spectrum
+        except:
+            spectrei_err = None
     elif spectrum_name.split('.')[-1]=='p':
         data = ras.open_pickle(spectrum_name) # load the pickle dictionnary
         spectrei = np.array(data[column_flux])  # the flux of your spectrum
+        try:
+            spectrei_err = np.array(data[column_flux+'_err']) # the error flux of your spectrum
+        except:
+            spectrei_err = None
+        
         try:
             grid = np.array(data[column_wave])      # the grid of wavelength of your spectrum
         except:
@@ -1810,6 +1819,8 @@ else:
     output = {'wave':grid, 'flux':spectrei, 'flux_used':flux_used, 'output':basic,
           'penality_map':penalite_step, 'penality':penalite0, 'parameters':parameters}
     
+if spectrei_err is not None: 
+    output['flux_err'] = spectrei_err
 
 output['parameters']['filename'] = 'RASSINE_'+new_file+'.p'
 
