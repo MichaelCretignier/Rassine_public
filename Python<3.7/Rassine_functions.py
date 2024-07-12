@@ -232,25 +232,28 @@ def grouping(array, tresh, num):
     cluster = (difference<tresh)
     indice = np.arange(len(cluster))[cluster]
     
-    j = 0
-    border_left = [indice[0]]
-    border_right = []
-    while j < len(indice)-1:
-        if indice[j]==indice[j+1]-1:
-            j+=1
-        else:
-            border_right.append(indice[j])
-            border_left.append(indice[j+1])
-            j+=1
-    border_right.append(indice[-1])        
-    border = np.array([border_left,border_right]).T
-    border = np.hstack([border,(1+border[:,1]-border[:,0])[:,np.newaxis]])
-    
-    kept = []
-    for j in range(len(border)):
-        if border[j,-1]>=num:
-            kept.append(array[border[j,0]:border[j,1]+2])
-    return np.array(kept), border 
+    if len(indice):
+        j = 0
+        border_left = [indice[0]]
+        border_right = []
+        while j < len(indice)-1:
+            if indice[j]==indice[j+1]-1:
+                j+=1
+            else:
+                border_right.append(indice[j])
+                border_left.append(indice[j+1])
+                j+=1
+        border_right.append(indice[-1])        
+        border = np.array([border_left,border_right]).T
+        border = np.hstack([border,(1+border[:,1]-border[:,0])[:,np.newaxis]])
+        
+        kept = []
+        for j in range(len(border)):
+            if border[j,-1]>=num:
+                kept.append(array[border[j,0]:border[j,1]+2])
+        return np.array(kept), border 
+    else:
+        return np.array([]), np.array([[0,0,0]])
 
 
 def local_max(spectre,vicinity):
@@ -1116,6 +1119,9 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
                 spectre = data_fits['flux_el'][0].astype('float64') # the flux of your spectrum
                 spectre_error = data_fits['err_el'][0].astype('float64') # the flux of your spectrum
             
+            spectre_error[spectre!=spectre] = 0
+            spectre[spectre!=spectre] = 0
+
             begin = np.min(np.arange(len(spectre))[spectre>0]) # remove border spectrum with 0 value
             end = np.max(np.arange(len(spectre))[spectre>0])   # remove border spectrum with 0 value
             grid = grid[begin:end+1]
