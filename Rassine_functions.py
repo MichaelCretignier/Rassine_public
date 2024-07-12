@@ -1156,10 +1156,10 @@ def preprocess_fits(files_to_process, instrument='HARPS', plx_mas=0, final_sound
                 grid = data_fits['wavelength_air'].astype('float64') # the grid of wavelength of your spectrum (assumed equidistant in lambda)
                 spectre = data_fits['flux'].astype('float64') # the flux of your spectrum
                 spectre_error = data_fits['error'].astype('float64') # the flux of your spectrum
-            except:
+            except: #SFLX ESO ARCHIVE
                 grid = data_fits['wave_air'][0].astype('float64') # the grid of wavelength of your spectrum (assumed equidistant in lambda)
-                spectre = data_fits['flux'][0].astype('float64') # the flux of your spectrum
-                spectre_error = data_fits['err'][0].astype('float64') # the flux of your spectrum
+                spectre = data_fits['flux_el'][0].astype('float64') # the flux of your spectrum
+                spectre_error = data_fits['err_el'][0].astype('float64') # the flux of your spectrum
             
             begin = np.min(np.arange(len(spectre))[spectre>0]) # remove border spectrum with 0 value
             end = np.max(np.arange(len(spectre))[spectre>0])   # remove border spectrum with 0 value
