@@ -1661,6 +1661,7 @@ if (feedback)|(plot_end)|(save_last_plot):
     plt.axhline(y=1,color='r',zorder=102)
     plt.xlabel(r'Wavelength [$\AA$]',fontsize=14)
     plt.ylabel('Flux normalised',fontsize=14)
+    plt.ylim(-0.5,2)
     ax = plt.gca()
     ax.xaxis.set_minor_locator(MultipleLocator(50))
     plt.tick_params(direction='in',top=True,which='both')
