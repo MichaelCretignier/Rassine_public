@@ -1429,14 +1429,17 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, make_master=Tru
         hole_right =  try_field(file_arbitrary,'hole_right')
         acc_sec =  try_field(file_arbitrary,'acc_sec')
         stack = 0
+        stack_err = 0
         bolo = []     
         rv_shift = []
         name_root_files = []
         for file in files_to_process[g]:
             f = pd.read_pickle(file)
             flux = f['flux']    
+            flux_err = f['flux_err']    
             rv_shift.append(try_field(f,'RV_shift'))
             stack += flux
+            stack_err += flux_err**2
             bolo.append(np.nansum(flux)/len(flux))
             name_root_files.append(file)
         
@@ -1454,6 +1457,7 @@ def preprocess_stack(files_to_process, bin_length = 1, dbin = 0, make_master=Tru
         lamp_w = np.sum(lamp[g]*bolo)/np.sum(bolo)
         all_berv.append(berv_w)
         out = {'flux':stack,
+               'flux_err':np.sqrt(abs(stack_err)),
                'jdb':jdb_w, #mjd weighted average by bolo flux
                'mjd':jdb_w - 0.5, #mjd weighted average by bolo flux
                'berv':berv_w,

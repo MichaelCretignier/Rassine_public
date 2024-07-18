@@ -420,7 +420,7 @@ if par_fwhm == 'auto':
     
     plt.figure(figsize=(10,6))
     plt.plot(vrad/1000,ccf,label='CCF')
-    plt.plot(vrad/1000,ras.gaussian(vrad/1000,popt[0],popt[1],popt[2],popt[3]),label='gaussian fit')
+    plt.plot(vrad/1000,ras.gaussian(vrad/1000,popt[0],popt[1],popt[2],popt[3]),label='gaussian fit (%.2f km/s)'%(popt[-1]*2.35))
     plt.legend()
     plt.title('Debug graphic : CCF and fit to determine the FWHM\n Check that the fit has correctly converged')
     plt.xlabel('Vrad [km/s]')
