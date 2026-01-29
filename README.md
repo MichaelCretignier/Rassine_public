@@ -1,5 +1,16 @@
-By Michaël Cretignier 
-EMAIL : michael.cretignier@physics.ox.ac.uk
+# RASSINE
+
+<p align="center">
+  <img src="logo.png" alt="Project logo" width="750">
+</p>
+
+# Contact Me
+
+If you have any problem, please contact me at:
+
+michael.cretignier@physics.ox.ac.uk
+
+# Description
 
 ————————
 NEWS :
