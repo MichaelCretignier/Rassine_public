@@ -454,7 +454,7 @@ if (feedback)&(par_smoothing_box != 'auto'):
     plt.legend()
     axcolor = 'whitesmoke'
     axsmoothing = plt.axes([0.14, 0.1, 0.40, 0.02], facecolor = axcolor)
-    ssmoothing = Slider(axsmoothing, 'Kernel length', 1, 10, valinit = int(par_smoothing_box), valstep=1)
+    ssmoothing = Slider(axsmoothing, 'Kernel length', 1, 20, valinit = int(par_smoothing_box), valstep=1)
     
     resetax = plt.axes([0.8, 0.05, 0.1, 0.1])
     button = Button(resetax, 'Reset', color=axcolor, hovercolor='0.975')
