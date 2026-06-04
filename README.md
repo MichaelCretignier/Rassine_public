@@ -47,9 +47,7 @@ The user do not need to compile it by himself/herself with Python since it will 
 RASSINE can be run in multi-processed using the Rassine_multiprocessed.py code.
 Finally, RASSINE contains a python code Rassine_trigger.py which is automatically launching all the different steps if you are working with a spectra time-series.
 
-————————
-BASIC RULES :
-————————
+## Basic rules:
 
 If :
 1) Individual spectra of different stars : Adapt the Rassine_config.py parameters —> launch Rassine.py in Ipython shell
@@ -65,9 +63,7 @@ The trigger will make different steps that you can control with the boolean butt
 6) Launch the intersect_all_continuum on spectra created in 5)
 7) Launch the matching_all_continuum on spectra created in 6)
 
-————————
-MORE INFORMATIONS :
-————————
+## Console options
 
 You can also run the main Rassine.py code in sys mode, in this case the options are :
 
