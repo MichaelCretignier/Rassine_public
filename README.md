@@ -16,9 +16,9 @@ michael.cretignier@physics.ox.ac.uk
 
 For a Python version below 3.7, replace the five codes with the ones stored in the Python<3.7 directory.
 
-## New DRS update
+## New DRS update (ESPRESSO DRS)
 
-If you're using HARPS/HARPN new DRS files (based on the ESPRESSO DRS), please change the instrument for 'ESPRESSO' in the `Rassine_trigger.py`.
+If you're using HARPS/HARPN new DRS files (based on the ESPRESSO DRS), please change the instrument for 'ESPRESSO' in the `Rassine_trigger.py`
 
 ```bash
 instrument = 'ESPRESSO'
