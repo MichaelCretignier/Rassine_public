@@ -12,11 +12,11 @@ michael.cretignier@physics.ox.ac.uk
 
 # Description
 
-————————
-NEWS :
-————————
+## News
 
 For a Python version below 3.7, replace the five codes with the ones stored in the Python<3.7 directory.
+
+## New DRS update
 
 If you're using HARPS/HARPN new DRS files (based on the ESPRESSO DRS), please change the instrument for 'ESPRESSO' in the `Rassine_trigger.py`.
 
@@ -24,10 +24,7 @@ If you're using HARPS/HARPN new DRS files (based on the ESPRESSO DRS), please ch
 instrument = 'ESPRESSO'
 ```
 
-
-————————
-IMPORTANT INFORMATIONS :
-————————
+## Important informations
 
 Please cite Cretignier et al., 2020 paper (see the paper in the directory for a better understanding of the code).
 ADS Link : https://ui.adsabs.harvard.edu/abs/2020A%26A...640A..42C/abstract
