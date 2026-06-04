@@ -10,9 +10,11 @@ If you have any problem, please contact me at:
 
 michael.cretignier@physics.ox.ac.uk
 
-# Description
+# Useful information
 
-## News
+## Python < 3.7
+
+The standard version of RASSINE is now Python >= 3.7
 
 For a Python version below 3.7, replace the five codes with the ones stored in the Python<3.7 directory.
 
