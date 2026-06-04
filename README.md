@@ -69,16 +69,16 @@ The trigger will make different steps that you can control with the boolean butt
 
 You can also run the main Rassine.py code in sys mode, in this case the options are :
 
--i : the spectrum full path name
--o : the output directory
--f : the flux keyword of your dictionary
--w : the wave keyword of your dictionary
--l : the optional anchor file
--r : the minimum radius (parameter 5)
--R : the maximum radius (parameter 6)
--p : the par_stretching parameter (parameter 1)
--a : activate or suppress graphical feedback
--P : to only print when RASSINE finished the normalisation
+-i : the spectrum full path name \
+-o : the output directory \
+-f : the flux keyword of your dictionary \
+-w : the wave keyword of your dictionary \
+-l : the optional anchor file \
+-r : the minimum radius (parameter 5) \
+-R : the maximum radius (parameter 6) \
+-p : the par_stretching parameter (parameter 1) \
+-a : activate or suppress graphical feedback \
+-P : to only print when RASSINE finished the normalisation 
 
 Sys options are dominant in comparison to the values written in the Rassine_config.py file.
 You can provide a RASSINE output file to normalise another spectra from the same star using the 'anchor_file' parameter.
